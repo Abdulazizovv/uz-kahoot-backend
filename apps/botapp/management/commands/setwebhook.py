@@ -25,6 +25,9 @@ class Command(BaseCommand):
                 await bot.delete_my_commands()  # reset before re-setting
                 from bot.utils.set_bot_commands import set_default_commands
                 await set_default_commands(bot)
+            except Exception as e:
+                self.stderr.write(self.style.ERROR(f"Failed to set webhook: {e}"))
+                raise
             finally:
                 await bot.session.close()
         asyncio.run(_set())

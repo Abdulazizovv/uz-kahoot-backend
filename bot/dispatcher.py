@@ -1,11 +1,10 @@
 from aiogram import Dispatcher
-from aiogram.client.session.aiohttp import AiohttpSession
 from aiogram.fsm.storage.memory import MemoryStorage
 from .routers import register_routers
 
 
 def create_dispatcher() -> Dispatcher:
-    dp = Dispatcher(storage=MemoryStorage(), session=AiohttpSession())
+    dp = Dispatcher(storage=MemoryStorage())
     register_routers(dp)
     return dp
 

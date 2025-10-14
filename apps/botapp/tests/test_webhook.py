@@ -6,19 +6,26 @@ from django.urls import reverse
 
 
 class WebhookViewTests(SimpleTestCase):
-    async def test_webhook_accepts_valid_secret_and_token(self):
-        # Arrange env for secret
+    async def test_webhook_rejects_missing_secret(self):
         os.environ["TELEGRAM_WEBHOOK_SECRET"] = "testsecret"
-
-        # Lazy import after env is set to ensure module-level read picks it up
         from apps.botapp import views
         importlib.reload(views)
         from bot.bot import bot
 
         url = reverse("telegram_webhook", kwargs={"token": bot.token})
         client = AsyncClient()
+        payload = {"update_id": 1}
+        resp = await client.post(url, data=json.dumps(payload), content_type="application/json")
+        assert resp.status_code == 403
 
-        # Minimal update payload
+    async def test_webhook_accepts_valid_secret_and_token(self):
+        os.environ["TELEGRAM_WEBHOOK_SECRET"] = "testsecret"
+        from apps.botapp import views
+        importlib.reload(views)
+        from bot.bot import bot
+
+        url = reverse("telegram_webhook", kwargs={"token": bot.token})
+        client = AsyncClient()
         payload = {
             "update_id": 123456789,
             "message": {
@@ -30,15 +37,10 @@ class WebhookViewTests(SimpleTestCase):
                 "entities": [{"type": "bot_command", "offset": 0, "length": 6}],
             },
         }
-
-        # Act
-        response = await client.post(
+        resp = await client.post(
             url,
             data=json.dumps(payload),
             content_type="application/json",
             headers={"X-Telegram-Bot-Api-Secret-Token": "testsecret"},
         )
-
-        # Assert
-        assert response.status_code in (200, 500)  # 500 if handler raises; 200 if fed correctly
-        # We at least assert that secret and token check passed
+        assert resp.status_code in (200, 500)
