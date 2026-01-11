@@ -56,13 +56,25 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    # Third-party apps
+    "rest_framework",
+    "rest_framework_simplejwt",
+    "drf_spectacular",
+    "corsheaders",
+    "django_filters",
+    
+    "auth.users",
     # Local apps
     "apps.botapp",
     "apps.common",
+    "apps.students",
 ]
+
+AUTH_USER_MODEL = "users.User"
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "corsheaders.middleware.CorsMiddleware",  # CORS middleware - eng yuqorida bo'lishi kerak
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -105,22 +117,22 @@ if env.bool("USE_SQLITE", default=False):
         }
     }
 else:
-    database_url = env.str("DATABASE_URL", default=None)
-    if database_url:
-        DATABASES = {
-            "default": dj_database_url.parse(database_url, conn_max_age=600, ssl_require=False)
+    # database_url = env.str("DATABASE_URL", default=None)
+    # if database_url:
+    #     DATABASES = {
+    #         "default": dj_database_url.parse(database_url, conn_max_age=600, ssl_require=False)
+    #     }
+    # else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": env("POSTGRES_DB"),
+            "USER": env("POSTGRES_USER"),
+            "PASSWORD": env("POSTGRES_PASSWORD"),
+            "HOST": env("DB_HOST"),
+            "PORT": env("DB_PORT"),
         }
-    else:
-        DATABASES = {
-            "default": {
-                "ENGINE": "django.db.backends.postgresql",
-                "NAME": env("POSTGRES_DB"),
-                "USER": env("POSTGRES_USER"),
-                "PASSWORD": env("POSTGRES_PASSWORD"),
-                "HOST": env("DB_HOST"),
-                "PORT": env("DB_PORT"),
-            }
-        }
+    }
 
 
 # Password validation
@@ -168,6 +180,128 @@ MEDIA_ROOT = BASE_DIR.joinpath("media")
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# Django REST Framework Configuration
+REST_FRAMEWORK = {
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+}
+
+# DRF Spectacular (OpenAPI/Swagger) Configuration
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Education Platform API',
+    'DESCRIPTION': 'API documentation for Education Platform with Telegram Bot integration',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+    'COMPONENT_SPLIT_REQUEST': True,
+    'SCHEMA_PATH_PREFIX': r'/api/',
+    'TAGS': [
+        {'name': 'Authentication', 'description': 'Telegram OTP authentication endpoints'},
+        {'name': 'Students', 'description': 'Student management endpoints'},
+        {'name': 'Teachers', 'description': 'Teacher management endpoints'},
+    ],
+    'CONTACT': {
+        'name': 'API Support',
+        'email': 'support@example.com',
+    },
+    'LICENSE': {
+        'name': 'MIT License',
+    },
+}
+
+# Celery Configuration
+
+# Celery logging preferences
+CELERY_WORKER_HIJACK_ROOT_LOGGER = False
+
+# Error alerting toggle (default: enabled in production only)
+ERROR_ALERTS_ENABLED = env.bool("ERROR_ALERTS_ENABLED", default=not DEBUG)
+
+# Celery configuration
+CELERY_BROKER_URL = env.str(
+    "CELERY_BROKER_URL",
+    default=f"redis://{env.str('REDIS_HOST', 'redis')}:{env.int('REDIS_PORT', 6379)}/{env.int('REDIS_DB', 0)}",
+)
+
+CELERY_RESULT_BACKEND = env.str(
+    "CELERY_RESULT_BACKEND",
+    default=f"redis://{env.str('REDIS_HOST', 'redis')}:{env.int('REDIS_PORT', 6379)}/{env.int('REDIS_DB', 0)}",
+)
+
+CELERY_TASK_TIME_LIMIT = env.int("CELERY_TASK_TIME_LIMIT", 60 * 10)  # hard limit 10m
+CELERY_TASK_SOFT_TIME_LIMIT = env.int("CELERY_TASK_SOFT_TIME_LIMIT", 60 * 5)  # soft 5m
+CELERY_TASK_ALWAYS_EAGER = env.bool("CELERY_TASK_ALWAYS_EAGER", False)
+CELERY_TASK_TRACK_STARTED = True
+CELERY_TIMEZONE = TIME_ZONE
+CELERY_ENABLE_UTC = USE_TZ
+
+# Celery Beat Schedule - periodic tasks
+from celery.schedules import crontab
+
+CELERY_BEAT_SCHEDULE = {}
+
+# OTP settings (Redis-backed)
+OTP_CODE_TTL_SECONDS = env.int("OTP_CODE_TTL_SECONDS", 120)  # 2 minutes
+OTP_REQUEST_COOLDOWN_SECONDS = env.int("OTP_REQUEST_COOLDOWN_SECONDS", 60)  # 1 minute
+OTP_MAX_ATTEMPTS = env.int("OTP_MAX_ATTEMPTS", 5)
+OTP_CODE_LENGTH = env.int("OTP_CODE_LENGTH", 6)
+OTP_REDIS_PREFIX = env.str("OTP_REDIS_PREFIX", "otp")
+
+# SimpleJWT lifetimes (can be tuned via env)
+from datetime import timedelta
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=env.int("JWT_ACCESS_MINUTES", 15)),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=env.int("JWT_REFRESH_DAYS", 30)),
+    "ROTATE_REFRESH_TOKENS": False,
+    "BLACKLIST_AFTER_ROTATION": False,
+    "ALGORITHM": env.str("JWT_ALGORITHM", "HS256"),
+    "SIGNING_KEY": SECRET_KEY,
+}
+
+# CORS settings for Next.js frontend
+CORS_ALLOWED_ORIGINS = env.list(
+    "CORS_ALLOWED_ORIGINS",
+    default=[
+        "http://localhost:3000",  # Next.js default port
+        "http://127.0.0.1:3000",
+        "http://localhost:3001",
+        "http://127.0.0.1:3001",
+    ]
+)
+
+# Development: Allow all origins (only in DEBUG mode)
+if DEBUG:
+    CORS_ALLOW_ALL_ORIGINS = env.bool("CORS_ALLOW_ALL_ORIGINS", default=True)
+else:
+    CORS_ALLOW_ALL_ORIGINS = False
+
+# CORS headers
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_HEADERS = [
+    "accept",
+    "accept-encoding",
+    "authorization",
+    "content-type",
+    "dnt",
+    "origin",
+    "user-agent",
+    "x-csrftoken",
+    "x-requested-with",
+]
+CORS_ALLOW_METHODS = [
+    "DELETE",
+    "GET",
+    "OPTIONS",
+    "PATCH",
+    "POST",
+    "PUT",
+]
+
 
 # Security hardening when not in DEBUG
 if not DEBUG:

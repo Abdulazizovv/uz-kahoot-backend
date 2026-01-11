@@ -1,0 +1,193 @@
+openapi: 3.0.3
+info:
+  title: Education Platform API
+  version: 1.0.0
+  description: API documentation for Education Platform with Telegram Bot integration
+  contact:
+    name: API Support
+    email: support@example.com
+  license:
+    name: MIT License
+paths:
+  /api/auth/telegram/request-otp/:
+    post:
+      operationId: auth_telegram_request_otp_create
+      description: Request a 5-digit OTP code that will be sent to user via Telegram
+        bot. Rate limited to 1 request per minute.
+      summary: Request OTP code via Telegram
+      tags:
+      - Authentication
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TelegramRequestOTPRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TelegramRequestOTPRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TelegramRequestOTPRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          description: OTP sent successfully
+        '404':
+          description: User not found or not registered
+        '429':
+          description: Rate limit exceeded
+        '500':
+          description: Server error
+  /api/auth/telegram/verify-otp/:
+    post:
+      operationId: auth_telegram_verify_otp_create
+      description: Verify the OTP code received via Telegram and get JWT access and
+        refresh tokens. OTP codes are valid for 5 minutes and are deleted after successful
+        verification.
+      summary: Verify OTP and get JWT tokens
+      tags:
+      - Authentication
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TelegramVerifyOTPRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TelegramVerifyOTPRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TelegramVerifyOTPRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenResponse'
+              examples:
+                Success:
+                  value:
+                    access: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...
+                    refresh: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...
+                    user:
+                      id: 123e4567-e89b-12d3-a456-426614174000
+                      phone_number: '+998901234567'
+                      first_name: John
+                      last_name: Doe
+                      email: john@example.com
+                      user_type: student
+                      phone_verified: true
+          description: OTP verified successfully, returns JWT tokens
+        '400':
+          description: Invalid or expired OTP
+        '404':
+          description: User not found
+  /api/auth/token/refresh/:
+    post:
+      operationId: auth_token_refresh_create
+      description: |-
+        Takes a refresh type JSON web token and returns an access type JSON web
+        token if the refresh token is valid.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenRefreshRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenRefreshRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenRefreshRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenRefresh'
+          description: ''
+components:
+  schemas:
+    TelegramRequestOTPRequest:
+      type: object
+      description: Telegram user_id orqali OTP so'rash
+      properties:
+        user_id:
+          type: string
+          minLength: 1
+          description: 'Telegram user ID (Example: ''123456789'')'
+      required:
+      - user_id
+    TelegramVerifyOTPRequest:
+      type: object
+      description: Telegram OTP tasdiqlash va JWT token olish
+      properties:
+        user_id:
+          type: string
+          minLength: 1
+          description: 'Telegram user ID (Example: ''123456789'')'
+        otp:
+          type: string
+          minLength: 5
+          description: '5 xonali OTP kod (Example: ''12345'')'
+          maxLength: 5
+      required:
+      - otp
+      - user_id
+    TokenRefresh:
+      type: object
+      properties:
+        access:
+          type: string
+          readOnly: true
+      required:
+      - access
+    TokenRefreshRequest:
+      type: object
+      properties:
+        refresh:
+          type: string
+          writeOnly: true
+          minLength: 1
+      required:
+      - refresh
+    TokenResponse:
+      type: object
+      description: JWT token javob serializer
+      properties:
+        access:
+          type: string
+          description: JWT access token (valid for 15 minutes)
+        refresh:
+          type: string
+          description: JWT refresh token (valid for 30 days)
+        user:
+          type: string
+          readOnly: true
+          description: User information
+      required:
+      - access
+      - refresh
+      - user
+  securitySchemes:
+    jwtAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+tags:
+- name: Authentication
+  description: Telegram OTP authentication endpoints
+- name: Students
+  description: Student management endpoints
+- name: Teachers
+  description: Teacher management endpoints
