@@ -1,0 +1,141 @@
+{
+  "subject": "Elektromagnetizm",
+  "questions": [
+    {
+      "question": "Magnitlar qanday turlarga bo'linadi?",
+      "answers": [
+        "Tabiiy magnitlar",
+        "Sun'iy magnitlar",
+        "Tabiiy va sun'iy magnitlar",
+        "TJY"
+      ],
+      "solution": 2,
+      "cooldown": 5,
+      "time": 20
+    },
+    {
+      "question": "Magnit so'zining ma'nosi nima?",
+      "answers": [
+        "temirni tortuvchi",
+        "ohanrabo",
+        "temirni itaruvchi",
+        "A va B javoblar to'g'ri"
+      ],
+      "solution": 3,
+      "cooldown": 5,
+      "time": 20
+    },
+    {
+      "question": "Magnit nechta qutbga ega bo'ladi?",
+      "answers": ["2 ta", "3 ta", "4 ta", "1 ta"],
+      "solution": 0,
+      "cooldown": 5,
+      "time": 15
+    },
+    {
+      "question": "Yer sharini magnit deyish mumkinmi?",
+      "answers": ["Ha mumkin", "U ulkan magnit", "Yo'q mumkin emas", "TJY"],
+      "solution": 1,
+      "cooldown": 5,
+      "time": 15
+    },
+    {
+      "question": "Magnitlar qanday moddalar orqali o'z ta'sirini ko'rsatadi?",
+      "answers": [
+        "Shisha va charm",
+        "Charm va suv",
+        "Shisha va suv",
+        "Hammasi"
+      ],
+      "solution": 3,
+      "cooldown": 5,
+      "time": 20
+    },
+    {
+      "question": "Kuchli qizdirilganda magnit xossalari yo'qoladimi?",
+      "answers": [
+        "Ha yo'qoladi",
+        "Yo'q yo'qolmaydi",
+        "Qisman yo'qoladi",
+        "To'g'ri javob berilmagan"
+      ],
+      "solution": 0,
+      "cooldown": 5,
+      "time": 15
+    },
+    {
+      "question": "Magnit maydonning elektr toki bilan bog'liqligini tajribada aniqlagan olim kim edi?",
+      "answers": [
+        "Sharl Kulon",
+        "Isaak Nyuton",
+        "Xans Kristian Ersted",
+        "Nikolay Kopernik"
+      ],
+      "solution": 2,
+      "cooldown": 5,
+      "time": 20
+    },
+    {
+      "question": "Ersted tajribasi nimani ifodalaydi?",
+      "answers": [
+        "Tok o'tayotgan o'tkazgich atrofida elektr maydon borligi",
+        "Tok o'tayotgan o'tkazgich atrofida magnit maydon borligi",
+        "Tok o'tayotgan o'tkazgich atrofida elektr maydon yo'qligi",
+        "Tok o'tayotgan o'tkazgich atrofida magnit maydon yo'qligi"
+      ],
+      "solution": 1,
+      "cooldown": 5,
+      "time": 25
+    },
+    {
+      "question": "Magnit maydon kuch chiziqlari yo'nalishini parma qoidasi orqali qanday topiladi?",
+      "answers": [
+        "Agar parmaning ilgarilanma harakati yo'nalishi o'tkazgichdagi tokning yo'nalishida bo'lsa, parma dastasining aylanish yo'nalishi shu tok magnit kuch chiziqlarining yo'nalishini ko'rsatadi",
+        "Agar parmaning aylanma harakati yo'nalishi o'tkazgichdagi tokning yo'nalishida bo'lsa, parma dastasining aylanish yo'nalishi shu tok magnit kuch chiziqlarining yo'nalishini ko'rsatadi",
+        "Agar parmaning aylanma harakati yo'nalishi o'tkazgichdagi tokning yo'nalishida bo'lsa, parma dastasining ilgarilanma yo'nalishi shu tok magnit kuch chiziqlarining yo'nalishini ko'rsatadi",
+        "Agar parmaning ilgarilanma harakati yo'nalishi o'tkazgichdagi tokning yo'nalishida bo'lsa, parma dastasining ilgarilanma yo'nalishi shu tok magnit kuch chiziqlarining yo'nalishini ko'rsatadi"
+      ],
+      "solution": 0,
+      "cooldown": 5,
+      "time": 30
+    },
+    {
+      "question": "Temir o'zakka bir necha qavat qilib izolyatsiyalangan o'tkazgich o'rab hosil qilgan g'altak nima deb ataladi?",
+      "answers": ["Magnit", "Elektromagnit", "Tokli g'altak", "TJY"],
+      "solution": 1,
+      "cooldown": 5,
+      "time": 20
+    },
+    {
+      "question": "Magnit maydonning tokli o'tkazgichga ta'sir etuvchi kuchining yo'nalishi qanday aniqlanadi?",
+      "answers": [
+        "Parma qoidasi",
+        "Chap qo'l qoidasi",
+        "A va B javoblari",
+        "To'g'ri javob yo'q"
+      ],
+      "solution": 1,
+      "cooldown": 5,
+      "time": 20
+    },
+    {
+      "question": "Kompas Yer sharining qaysi qutbini ko'rsatadi?",
+      "answers": ["Shimoliy", "Janubiy", "G'arbiy", "Sharqiy"],
+      "solution": 1,
+      "cooldown": 5,
+      "time": 15
+    },
+    {
+      "question": "Elektromagnit induksiya hodisasi nima deb ataladi?",
+      "answers": [
+        "Magnit maydon yordamida o'tkazgichda elektr toki hosil bo'lishi",
+        "Magnit maydon yordamida o'tkazgichda tok hosil bo'lishi",
+        "Magnit maydon yordamida o'tkazgichda elektr hosil bo'lishi",
+        "Magnit maydon yordamida elektr toki hosil bo'lishi"
+      ],
+      "solution": 0,
+      "cooldown": 5,
+      "time": 20
+    }
+  ]
+}

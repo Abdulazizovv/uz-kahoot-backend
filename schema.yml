@@ -9,6 +9,369 @@ info:
   license:
     name: MIT License
 paths:
+  /api/attendance/:
+    get:
+      operationId: attendance_list
+      description: Barcha davomat qaydlarini olish
+      summary: Davomat qaydlari ro'yxati
+      parameters:
+      - in: query
+        name: is_auto_marked
+        schema:
+          type: boolean
+      - in: query
+        name: lesson
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: lesson__date
+        schema:
+          type: string
+          format: date
+      - in: query
+        name: lesson__subject
+        schema:
+          type: string
+          format: uuid
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: status
+        schema:
+          type: string
+          title: Holat
+          enum:
+          - absent
+          - excused
+          - late
+          - present
+        description: |-
+          * `present` - Keldi
+          * `absent` - Kelmadi
+          * `late` - Kech qoldi
+          * `excused` - Sababli
+      - in: query
+        name: student
+        schema:
+          type: string
+          format: uuid
+      tags:
+      - Davomat
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAttendanceListList'
+          description: ''
+    post:
+      operationId: attendance_create
+      description: Talaba uchun davomat belgilash (qo'lda)
+      summary: Davomat belgilash
+      tags:
+      - Davomat
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AttendanceCreateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AttendanceCreateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AttendanceCreateRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttendanceCreate'
+          description: ''
+  /api/attendance-statistics/:
+    get:
+      operationId: attendance_statistics_list
+      description: Talabalarning davomat statistikasi
+      summary: Davomat statistikasi
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - in: query
+        name: student
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: subject
+        schema:
+          type: string
+          format: uuid
+      tags:
+      - Statistika
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAttendanceStatisticsList'
+          description: ''
+  /api/attendance-statistics/{id}/:
+    get:
+      operationId: attendance_statistics_retrieve
+      description: Bitta statistika yozuvi
+      summary: Statistika tafsilotlari
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Davomat statistikasi.
+        required: true
+      tags:
+      - Statistika
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttendanceStatistics'
+          description: ''
+  /api/attendance-statistics/my_statistics/:
+    get:
+      operationId: attendance_statistics_my_statistics_retrieve
+      description: Joriy student uchun davomat statistikasi
+      summary: Mening statistikam
+      tags:
+      - Statistika
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttendanceStatistics'
+          description: ''
+  /api/attendance-statistics/report/:
+    post:
+      operationId: attendance_statistics_report_create
+      description: Ma'lum davr uchun davomat hisoboti
+      summary: Davomat hisoboti
+      tags:
+      - Statistika
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AttendanceReportRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AttendanceReportRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AttendanceReportRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttendanceStatistics'
+          description: ''
+  /api/attendance/{id}/:
+    get:
+      operationId: attendance_retrieve
+      description: Bitta davomat qaydi haqida ma'lumot
+      summary: Davomat tafsilotlari
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Davomat.
+        required: true
+      tags:
+      - Davomat
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttendanceDetail'
+          description: ''
+    put:
+      operationId: attendance_update
+      description: Davomat holatini yangilash
+      summary: Davomatni yangilash
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Davomat.
+        required: true
+      tags:
+      - Davomat
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AttendanceUpdateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AttendanceUpdateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AttendanceUpdateRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttendanceUpdate'
+          description: ''
+    patch:
+      operationId: attendance_partial_update
+      description: Davomat holatini qisman yangilash
+      summary: Davomatni qisman yangilash
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Davomat.
+        required: true
+      tags:
+      - Davomat
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedAttendanceUpdateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedAttendanceUpdateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedAttendanceUpdateRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttendanceUpdate'
+          description: ''
+    delete:
+      operationId: attendance_destroy
+      description: Davomat qaydini soft delete qilish
+      summary: Davomatni o'chirish
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Davomat.
+        required: true
+      tags:
+      - Davomat
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/attendance/bulk_create/:
+    post:
+      operationId: attendance_bulk_create_create
+      description: Bir vaqtning o'zida bir nechta talabaga davomat belgilash
+      summary: Bir nechta talabaga davomat belgilash
+      tags:
+      - Davomat
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AttendanceBulkCreateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AttendanceBulkCreateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AttendanceBulkCreateRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttendanceList'
+          description: ''
+  /api/attendance/my_attendance/:
+    get:
+      operationId: attendance_my_attendance_retrieve
+      description: Joriy student uchun davomat qaydlari
+      summary: Mening davomatim
+      tags:
+      - Davomat
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttendanceList'
+          description: ''
   /api/auth/telegram/request-otp/:
     post:
       operationId: auth_telegram_request_otp_create
@@ -46,7 +409,7 @@ paths:
       operationId: auth_telegram_verify_otp_create
       description: Verify the OTP code received via Telegram and get JWT access and
         refresh tokens. OTP codes are valid for 5 minutes and are deleted after successful
-        verification.
+        verification. Only the OTP code is required, no user_id needed.
       summary: Verify OTP and get JWT tokens
       tags:
       - Authentication
@@ -116,8 +479,4516 @@ paths:
               schema:
                 $ref: '#/components/schemas/TokenRefresh'
           description: ''
+  /api/groups/:
+    get:
+      operationId: groups_list
+      description: Barcha talabalar guruhlarini ro'yxatini olish
+      summary: Guruhlar ro'yxati
+      parameters:
+      - in: query
+        name: grade
+        schema:
+          type: integer
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - Guruhlar
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedStudentGroupListList'
+          description: ''
+    post:
+      operationId: groups_create
+      description: Yangi talabalar guruhi yaratish
+      summary: Yangi guruh yaratish
+      tags:
+      - Guruhlar
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StudentGroupCreateUpdateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/StudentGroupCreateUpdateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/StudentGroupCreateUpdateRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentGroupCreateUpdate'
+          description: ''
+  /api/groups/{id}/:
+    get:
+      operationId: groups_retrieve
+      description: Bitta guruh haqida to'liq ma'lumot olish
+      summary: Guruh tafsilotlari
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Talabalar guruhi.
+        required: true
+      tags:
+      - Guruhlar
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentGroupDetail'
+          description: ''
+    put:
+      operationId: groups_update
+      description: Mavjud guruh ma'lumotlarini to'liq yangilash
+      summary: Guruhni yangilash
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Talabalar guruhi.
+        required: true
+      tags:
+      - Guruhlar
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StudentGroupCreateUpdateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/StudentGroupCreateUpdateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/StudentGroupCreateUpdateRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentGroupCreateUpdate'
+          description: ''
+    patch:
+      operationId: groups_partial_update
+      description: Guruh ma'lumotlarini qisman yangilash
+      summary: Guruhni qisman yangilash
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Talabalar guruhi.
+        required: true
+      tags:
+      - Guruhlar
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedStudentGroupCreateUpdateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedStudentGroupCreateUpdateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedStudentGroupCreateUpdateRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentGroupCreateUpdate'
+          description: ''
+    delete:
+      operationId: groups_destroy
+      description: Guruhni soft delete qilish (deleted_at ni o'rnatish)
+      summary: Guruhni o'chirish
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Talabalar guruhi.
+        required: true
+      tags:
+      - Guruhlar
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/groups/{id}/statistics/:
+    get:
+      operationId: groups_statistics_retrieve
+      description: Guruhdagi studentlar soni va boshqa statistik ma'lumotlar
+      summary: Guruh statistikasi
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Talabalar guruhi.
+        required: true
+      tags:
+      - Guruhlar
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  students_count:
+                    type: integer
+                  active_students:
+                    type: integer
+                  group_info:
+                    type: object
+          description: ''
+  /api/lessons/:
+    get:
+      operationId: lessons_list
+      description: Barcha darslar ro'yxatini olish
+      summary: Darslar ro'yxati
+      parameters:
+      - in: query
+        name: auto_attendance_enabled
+        schema:
+          type: boolean
+      - in: query
+        name: date
+        schema:
+          type: string
+          format: date
+      - in: query
+        name: group
+        schema:
+          type: string
+          format: uuid
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: status
+        schema:
+          type: string
+          title: Holat
+          enum:
+          - cancelled
+          - completed
+          - ongoing
+          - scheduled
+        description: |-
+          * `scheduled` - Rejalashtirilgan
+          * `ongoing` - Davom etmoqda
+          * `completed` - Tugallangan
+          * `cancelled` - Bekor qilingan
+      - in: query
+        name: subject
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: teacher
+        schema:
+          type: string
+          format: uuid
+      tags:
+      - Darslar
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedLessonListList'
+          description: ''
+    post:
+      operationId: lessons_create
+      description: Yangi dars sessiyasini qo'shish
+      summary: Yangi dars yaratish
+      tags:
+      - Darslar
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LessonCreateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/LessonCreateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/LessonCreateRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LessonCreate'
+          description: ''
+  /api/lessons/{id}/:
+    get:
+      operationId: lessons_retrieve
+      description: Bitta dars haqida to'liq ma'lumot
+      summary: Dars tafsilotlari
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Dars.
+        required: true
+      tags:
+      - Darslar
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LessonDetail'
+          description: ''
+    put:
+      operationId: lessons_update
+      description: Dars ma'lumotlarini yangilash
+      summary: Darsni yangilash
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Dars.
+        required: true
+      tags:
+      - Darslar
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LessonUpdateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/LessonUpdateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/LessonUpdateRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LessonUpdate'
+          description: ''
+    patch:
+      operationId: lessons_partial_update
+      description: Dars ma'lumotlarini qisman yangilash
+      summary: Darsni qisman yangilash
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Dars.
+        required: true
+      tags:
+      - Darslar
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedLessonUpdateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedLessonUpdateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedLessonUpdateRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LessonUpdate'
+          description: ''
+    delete:
+      operationId: lessons_destroy
+      description: Darsni soft delete qilish
+      summary: Darsni o'chirish
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Dars.
+        required: true
+      tags:
+      - Darslar
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/lessons/generate_from_schedule/:
+    post:
+      operationId: lessons_generate_from_schedule_create
+      description: Ma'lum bir hafta uchun jadvaldan darslarni avtomatik yaratish
+      summary: Jadvldan darslar yaratish
+      tags:
+      - Darslar
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                start_date:
+                  type: string
+                  format: date
+                end_date:
+                  type: string
+                  format: date
+                group_id:
+                  type: string
+                  format: uuid
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LessonList'
+          description: ''
+  /api/lessons/this_week/:
+    get:
+      operationId: lessons_this_week_retrieve
+      description: Joriy hafta uchun darslar
+      summary: Haftalik darslar
+      parameters:
+      - in: query
+        name: group_id
+        schema:
+          type: string
+      tags:
+      - Darslar
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LessonList'
+          description: ''
+  /api/lessons/today/:
+    get:
+      operationId: lessons_today_retrieve
+      description: Bugungi kun uchun rejalashtirilgan darslar
+      summary: Bugungi darslar
+      tags:
+      - Darslar
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LessonList'
+          description: ''
+  /api/questions/:
+    get:
+      operationId: questions_list
+      description: Barcha savollar ro'yxatini olish
+      summary: Savollar ro'yxati
+      parameters:
+      - in: query
+        name: difficulty
+        schema:
+          type: string
+          title: Qiyinlik darajasi
+          enum:
+          - easy
+          - hard
+          - medium
+        description: |-
+          * `easy` - Oson
+          * `medium` - O'rta
+          * `hard` - Qiyin
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: subject
+        schema:
+          type: string
+          format: uuid
+      tags:
+      - Savollar
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedQuestionListList'
+          description: ''
+    post:
+      operationId: questions_create
+      description: Yangi savol va javoblar qo'shish
+      summary: Yangi savol yaratish
+      tags:
+      - Savollar
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QuestionCreateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/QuestionCreateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/QuestionCreateRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuestionCreate'
+          description: ''
+  /api/questions/{id}/:
+    get:
+      operationId: questions_retrieve
+      description: Bitta savol haqida to'liq ma'lumot olish
+      summary: Savol tafsilotlari
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Savol.
+        required: true
+      tags:
+      - Savollar
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuestionDetail'
+          description: ''
+    put:
+      operationId: questions_update
+      description: Savol ma'lumotlarini yangilash
+      summary: Savolni yangilash
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Savol.
+        required: true
+      tags:
+      - Savollar
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QuestionUpdateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/QuestionUpdateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/QuestionUpdateRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuestionUpdate'
+          description: ''
+    patch:
+      operationId: questions_partial_update
+      description: Savol ma'lumotlarini qisman yangilash
+      summary: Savolni qisman yangilash
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Savol.
+        required: true
+      tags:
+      - Savollar
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedQuestionUpdateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedQuestionUpdateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedQuestionUpdateRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuestionUpdate'
+          description: ''
+    delete:
+      operationId: questions_destroy
+      description: Savolni soft delete qilish
+      summary: Savolni o'chirish
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Savol.
+        required: true
+      tags:
+      - Savollar
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/questions/by_subject/:
+    get:
+      operationId: questions_by_subject_retrieve
+      description: Ma'lum bir fandagi barcha savollar
+      summary: Fan bo'yicha savollar
+      parameters:
+      - in: query
+        name: subject_id
+        schema:
+          type: string
+        description: Fan ID (UUID)
+        required: true
+      tags:
+      - Savollar
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuestionList'
+          description: ''
+  /api/quizzes/:
+    get:
+      operationId: quizzes_list
+      description: Barcha test sessiyalari ro'yxatini olish
+      summary: Test sessiyalari ro'yxati
+      parameters:
+      - in: query
+        name: is_completed
+        schema:
+          type: boolean
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: student
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: subject
+        schema:
+          type: string
+          format: uuid
+      tags:
+      - Testlar
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedQuizListList'
+          description: ''
+    post:
+      operationId: quizzes_create
+      description: Yangi test sessiyasini boshlash
+      summary: Test sessiyasi yaratish
+      tags:
+      - Testlar
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QuizCreateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/QuizCreateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/QuizCreateRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuizCreate'
+          description: ''
+  /api/quizzes/{id}/:
+    get:
+      operationId: quizzes_retrieve
+      description: Bitta test sessiyasi haqida to'liq ma'lumot
+      summary: Test sessiyasi tafsilotlari
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Test sessiyasi.
+        required: true
+      tags:
+      - Testlar
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuizDetail'
+          description: ''
+    delete:
+      operationId: quizzes_destroy
+      description: Test sessiyasini soft delete qilish
+      summary: Test sessiyasini o'chirish
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Test sessiyasi.
+        required: true
+      tags:
+      - Testlar
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/quizzes/{id}/complete_quiz/:
+    post:
+      operationId: quizzes_complete_quiz_create
+      description: Test sessiyasini tugatish va natijalarni hisoblash
+      summary: Testni tugatish
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Test sessiyasi.
+        required: true
+      tags:
+      - Testlar
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QuizListRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/QuizListRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/QuizListRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuizDetail'
+          description: ''
+  /api/quizzes/my_quizzes/:
+    get:
+      operationId: quizzes_my_quizzes_retrieve
+      description: Joriy foydalanuvchining barcha testlari
+      summary: Mening testlarim
+      tags:
+      - Testlar
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuizList'
+          description: ''
+  /api/quizzes/start_quiz/:
+    post:
+      operationId: quizzes_start_quiz_create
+      description: Yangi test sessiyasini boshlash va tasodifiy savollar olish
+      summary: Test boshlash
+      tags:
+      - Testlar
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QuizStartRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/QuizStartRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/QuizStartRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuizDetail'
+          description: ''
+  /api/quizzes/submit_answer/:
+    post:
+      operationId: quizzes_submit_answer_create
+      description: Savolga javob yuborish
+      summary: Javob yuborish
+      tags:
+      - Testlar
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QuizSubmitAnswerRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/QuizSubmitAnswerRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/QuizSubmitAnswerRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentAnswerDetail'
+          description: ''
+  /api/schedules/:
+    get:
+      operationId: schedules_list
+      description: Barcha darslar jadvalini olish
+      summary: Darslar jadvali ro'yxati
+      parameters:
+      - in: query
+        name: day_of_week
+        schema:
+          type: string
+          title: Hafta kuni
+          enum:
+          - friday
+          - monday
+          - saturday
+          - sunday
+          - thursday
+          - tuesday
+          - wednesday
+        description: |-
+          * `monday` - Dushanba
+          * `tuesday` - Seshanba
+          * `wednesday` - Chorshanba
+          * `thursday` - Payshanba
+          * `friday` - Juma
+          * `saturday` - Shanba
+          * `sunday` - Yakshanba
+      - in: query
+        name: group
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: is_active
+        schema:
+          type: boolean
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: subject
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: teacher
+        schema:
+          type: string
+          format: uuid
+      tags:
+      - Jadval
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedScheduleListList'
+          description: ''
+    post:
+      operationId: schedules_create
+      description: Yangi dars jadvali qo'shish
+      summary: Yangi jadval yaratish
+      tags:
+      - Jadval
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScheduleCreateUpdateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ScheduleCreateUpdateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ScheduleCreateUpdateRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScheduleCreateUpdate'
+          description: ''
+  /api/schedules/{id}/:
+    get:
+      operationId: schedules_retrieve
+      description: Bitta jadval yozuvi haqida ma'lumot
+      summary: Jadval tafsilotlari
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Dars jadvali.
+        required: true
+      tags:
+      - Jadval
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScheduleDetail'
+          description: ''
+    put:
+      operationId: schedules_update
+      description: Jadval ma'lumotlarini yangilash
+      summary: Jadvalni yangilash
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Dars jadvali.
+        required: true
+      tags:
+      - Jadval
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScheduleCreateUpdateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ScheduleCreateUpdateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ScheduleCreateUpdateRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScheduleCreateUpdate'
+          description: ''
+    patch:
+      operationId: schedules_partial_update
+      description: Jadval ma'lumotlarini qisman yangilash
+      summary: Jadvalni qisman yangilash
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Dars jadvali.
+        required: true
+      tags:
+      - Jadval
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedScheduleCreateUpdateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedScheduleCreateUpdateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedScheduleCreateUpdateRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScheduleCreateUpdate'
+          description: ''
+    delete:
+      operationId: schedules_destroy
+      description: Jadvalni soft delete qilish
+      summary: Jadvalni o'chirish
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Dars jadvali.
+        required: true
+      tags:
+      - Jadval
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/schedules/by_group/:
+    get:
+      operationId: schedules_by_group_retrieve
+      description: Ma'lum bir guruhning haftalik darslar jadvali
+      summary: Guruh jadvali
+      parameters:
+      - in: query
+        name: group_id
+        schema:
+          type: string
+        required: true
+      tags:
+      - Jadval
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScheduleList'
+          description: ''
+  /api/statistics/:
+    get:
+      operationId: statistics_list
+      description: Talabalarning test urinishlari statistikasi
+      summary: Test statistikasi
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - in: query
+        name: student
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: subject
+        schema:
+          type: string
+          format: uuid
+      tags:
+      - Statistika
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedQuizAttemptList'
+          description: ''
+  /api/statistics/{id}/:
+    get:
+      operationId: statistics_retrieve
+      description: Bitta statistika yozuvi haqida ma'lumot
+      summary: Statistika tafsilotlari
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Test urinishi statistikasi.
+        required: true
+      tags:
+      - Statistika
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuizAttempt'
+          description: ''
+  /api/statistics/my_statistics/:
+    get:
+      operationId: statistics_my_statistics_retrieve
+      description: Joriy foydalanuvchining test statistikasi
+      summary: Mening statistikam
+      tags:
+      - Statistika
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuizAttempt'
+          description: ''
+  /api/students/:
+    get:
+      operationId: students_list
+      description: Barcha studentlarning ro'yxatini olish
+      summary: Studentlar ro'yxati
+      parameters:
+      - in: query
+        name: group
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: group__grade
+        schema:
+          type: integer
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - Studentlar
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedStudentListList'
+          description: ''
+    post:
+      operationId: students_create
+      description: Yangi student ro'yxatdan o'tkazish
+      summary: Yangi student yaratish
+      tags:
+      - Studentlar
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StudentCreateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/StudentCreateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/StudentCreateRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentCreate'
+          description: ''
+  /api/students/{id}/:
+    get:
+      operationId: students_retrieve
+      description: Bitta student haqida to'liq ma'lumot olish
+      summary: Student tafsilotlari
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Talaba.
+        required: true
+      tags:
+      - Studentlar
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentDetail'
+          description: ''
+    put:
+      operationId: students_update
+      description: Student ma'lumotlarini to'liq yangilash
+      summary: Studentni yangilash
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Talaba.
+        required: true
+      tags:
+      - Studentlar
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StudentUpdateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/StudentUpdateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/StudentUpdateRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentUpdate'
+          description: ''
+    patch:
+      operationId: students_partial_update
+      description: Student ma'lumotlarini qisman yangilash
+      summary: Studentni qisman yangilash
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Talaba.
+        required: true
+      tags:
+      - Studentlar
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedStudentUpdateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedStudentUpdateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedStudentUpdateRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentUpdate'
+          description: ''
+    delete:
+      operationId: students_destroy
+      description: Studentni soft delete qilish
+      summary: Studentni o'chirish
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Talaba.
+        required: true
+      tags:
+      - Studentlar
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/students/by_group/:
+    get:
+      operationId: students_by_group_retrieve
+      description: Ma'lum bir guruhdagi barcha studentlar
+      summary: Guruh bo'yicha studentlar
+      parameters:
+      - in: query
+        name: group_id
+        schema:
+          type: string
+        description: Guruh ID (UUID)
+        required: true
+      tags:
+      - Studentlar
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentList'
+          description: ''
+  /api/students/me/:
+    get:
+      operationId: students_me_retrieve
+      description: Joriy foydalanuvchining student profili
+      summary: Student profili
+      tags:
+      - Studentlar
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentList'
+          description: ''
+  /api/subjects/:
+    get:
+      operationId: subjects_list
+      description: Barcha fanlar ro'yxatini olish
+      summary: Fanlar ro'yxati
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - Fanlar
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedSubjectListList'
+          description: ''
+    post:
+      operationId: subjects_create
+      description: Yangi fan qo'shish
+      summary: Yangi fan yaratish
+      tags:
+      - Fanlar
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubjectCreateUpdateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SubjectCreateUpdateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SubjectCreateUpdateRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubjectCreateUpdate'
+          description: ''
+  /api/subjects/{id}/:
+    get:
+      operationId: subjects_retrieve
+      description: Bitta fan haqida to'liq ma'lumot olish
+      summary: Fan tafsilotlari
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Fan.
+        required: true
+      tags:
+      - Fanlar
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubjectDetail'
+          description: ''
+    put:
+      operationId: subjects_update
+      description: Fan ma'lumotlarini to'liq yangilash
+      summary: Fanni yangilash
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Fan.
+        required: true
+      tags:
+      - Fanlar
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubjectCreateUpdateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SubjectCreateUpdateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SubjectCreateUpdateRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubjectCreateUpdate'
+          description: ''
+    patch:
+      operationId: subjects_partial_update
+      description: Fan ma'lumotlarini qisman yangilash
+      summary: Fanni qisman yangilash
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Fan.
+        required: true
+      tags:
+      - Fanlar
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedSubjectCreateUpdateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedSubjectCreateUpdateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedSubjectCreateUpdateRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubjectCreateUpdate'
+          description: ''
+    delete:
+      operationId: subjects_destroy
+      description: Fanni soft delete qilish
+      summary: Fanni o'chirish
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Fan.
+        required: true
+      tags:
+      - Fanlar
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/teachers/:
+    get:
+      operationId: teachers_list
+      description: Barcha o'qituvchilar ro'yxatini olish
+      summary: O'qituvchilar ro'yxati
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - O'qituvchilar
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedTeacherListList'
+          description: ''
+    post:
+      operationId: teachers_create
+      description: Yangi o'qituvchi ro'yxatdan o'tkazish
+      summary: Yangi o'qituvchi yaratish
+      tags:
+      - O'qituvchilar
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TeacherCreateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TeacherCreateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TeacherCreateRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TeacherCreate'
+          description: ''
+  /api/teachers/{id}/:
+    get:
+      operationId: teachers_retrieve
+      description: Bitta o'qituvchi haqida to'liq ma'lumot
+      summary: O'qituvchi tafsilotlari
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this O'qituvchi.
+        required: true
+      tags:
+      - O'qituvchilar
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TeacherDetail'
+          description: ''
+    put:
+      operationId: teachers_update
+      description: O'qituvchi ma'lumotlarini to'liq yangilash
+      summary: O'qituvchini yangilash
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this O'qituvchi.
+        required: true
+      tags:
+      - O'qituvchilar
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TeacherUpdateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TeacherUpdateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TeacherUpdateRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TeacherUpdate'
+          description: ''
+    patch:
+      operationId: teachers_partial_update
+      description: O'qituvchi ma'lumotlarini qisman yangilash
+      summary: O'qituvchini qisman yangilash
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this O'qituvchi.
+        required: true
+      tags:
+      - O'qituvchilar
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedTeacherUpdateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedTeacherUpdateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedTeacherUpdateRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TeacherUpdate'
+          description: ''
+    delete:
+      operationId: teachers_destroy
+      description: O'qituvchini soft delete qilish
+      summary: O'qituvchini o'chirish
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this O'qituvchi.
+        required: true
+      tags:
+      - O'qituvchilar
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/teachers/me/:
+    get:
+      operationId: teachers_me_retrieve
+      description: Joriy foydalanuvchining o'qituvchi profili
+      summary: O'qituvchi profili
+      tags:
+      - O'qituvchilar
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TeacherList'
+          description: ''
 components:
   schemas:
+    Answer:
+      type: object
+      description: Javob serializer
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        answer_text:
+          type: string
+          title: Javob matni
+        is_correct:
+          type: boolean
+          title: To'g'ri javobmi?
+        order:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Tartib
+      required:
+      - answer_text
+      - id
+    AnswerRequest:
+      type: object
+      description: Javob serializer
+      properties:
+        answer_text:
+          type: string
+          minLength: 1
+          title: Javob matni
+        is_correct:
+          type: boolean
+          title: To'g'ri javobmi?
+        order:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Tartib
+      required:
+      - answer_text
+    AttendanceBulkCreateRequest:
+      type: object
+      description: Bir nechta talabaga davomat belgilash
+      properties:
+        lesson_id:
+          type: string
+          format: uuid
+        students_status:
+          type: array
+          items:
+            type: object
+            additionalProperties: {}
+          description: '[{''student_id'': ''uuid'', ''status'': ''present''}, ...]'
+      required:
+      - lesson_id
+      - students_status
+    AttendanceCreate:
+      type: object
+      description: Davomat yaratish (qo'lda belgilash) uchun serializer
+      properties:
+        lesson:
+          type: string
+          format: uuid
+          title: Dars
+        student:
+          type: string
+          format: uuid
+          title: Talaba
+        status:
+          allOf:
+          - $ref: '#/components/schemas/StatusBbcEnum'
+          title: Holat
+        notes:
+          type: string
+          title: Izoh
+      required:
+      - lesson
+      - student
+    AttendanceCreateRequest:
+      type: object
+      description: Davomat yaratish (qo'lda belgilash) uchun serializer
+      properties:
+        lesson:
+          type: string
+          format: uuid
+          title: Dars
+        student:
+          type: string
+          format: uuid
+          title: Talaba
+        status:
+          allOf:
+          - $ref: '#/components/schemas/StatusBbcEnum'
+          title: Holat
+        notes:
+          type: string
+          title: Izoh
+      required:
+      - lesson
+      - student
+    AttendanceDetail:
+      type: object
+      description: Davomat tafsiloti uchun serializer
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        lesson:
+          allOf:
+          - $ref: '#/components/schemas/LessonDetail'
+          readOnly: true
+        student:
+          allOf:
+          - $ref: '#/components/schemas/StudentList'
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/StatusBbcEnum'
+          title: Holat
+        marked_at:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Belgilangan vaqt
+        marked_by:
+          type: string
+          format: uuid
+          nullable: true
+          title: Kim belgiladi
+        marked_by_name:
+          type: string
+          readOnly: true
+        is_auto_marked:
+          type: boolean
+          title: Avtomatik belgilanganmi?
+          description: Test orqali avtomatik belgilangan davomat
+        related_quiz:
+          type: string
+          format: uuid
+          nullable: true
+          title: Bog'langan test
+        related_quiz_info:
+          type: string
+          readOnly: true
+        notes:
+          type: string
+          title: Izoh
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Yaratilgan vaqti
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+          title: O'zgartirilgan vaqti
+      required:
+      - created_at
+      - id
+      - lesson
+      - marked_at
+      - marked_by_name
+      - related_quiz_info
+      - student
+      - updated_at
+    AttendanceList:
+      type: object
+      description: Davomat ro'yxati uchun serializer
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        lesson:
+          type: string
+          format: uuid
+          title: Dars
+        lesson_info:
+          type: string
+          readOnly: true
+        student:
+          allOf:
+          - $ref: '#/components/schemas/StudentList'
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/StatusBbcEnum'
+          title: Holat
+        marked_at:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Belgilangan vaqt
+        marked_by:
+          type: string
+          format: uuid
+          nullable: true
+          title: Kim belgiladi
+        marked_by_name:
+          type: string
+          readOnly: true
+        is_auto_marked:
+          type: boolean
+          title: Avtomatik belgilanganmi?
+          description: Test orqali avtomatik belgilangan davomat
+        related_quiz:
+          type: string
+          format: uuid
+          nullable: true
+          title: Bog'langan test
+        notes:
+          type: string
+          title: Izoh
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Yaratilgan vaqti
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+          title: O'zgartirilgan vaqti
+      required:
+      - created_at
+      - id
+      - lesson
+      - lesson_info
+      - marked_at
+      - marked_by_name
+      - student
+      - updated_at
+    AttendanceReportRequest:
+      type: object
+      description: Davomat hisoboti uchun serializer
+      properties:
+        start_date:
+          type: string
+          format: date
+        end_date:
+          type: string
+          format: date
+        group_id:
+          type: string
+          format: uuid
+        subject_id:
+          type: string
+          format: uuid
+        student_id:
+          type: string
+          format: uuid
+      required:
+      - end_date
+      - start_date
+    AttendanceStatistics:
+      type: object
+      description: Davomat statistikasi serializer
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        student:
+          allOf:
+          - $ref: '#/components/schemas/StudentList'
+          readOnly: true
+        subject:
+          allOf:
+          - $ref: '#/components/schemas/SubjectList'
+          readOnly: true
+        total_lessons:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Jami darslar
+        present_count:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Kelgan
+        absent_count:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Kelmagan
+        late_count:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Kech qolgan
+        excused_count:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Sababli
+        attendance_rate:
+          type: number
+          format: double
+          title: Davomat foizi
+        last_updated:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Oxirgi yangilangan
+      required:
+      - id
+      - last_updated
+      - student
+      - subject
+    AttendanceUpdate:
+      type: object
+      description: Davomat yangilash uchun serializer
+      properties:
+        status:
+          allOf:
+          - $ref: '#/components/schemas/StatusBbcEnum'
+          title: Holat
+        notes:
+          type: string
+          title: Izoh
+    AttendanceUpdateRequest:
+      type: object
+      description: Davomat yangilash uchun serializer
+      properties:
+        status:
+          allOf:
+          - $ref: '#/components/schemas/StatusBbcEnum'
+          title: Holat
+        notes:
+          type: string
+          title: Izoh
+    DayOfWeekEnum:
+      enum:
+      - monday
+      - tuesday
+      - wednesday
+      - thursday
+      - friday
+      - saturday
+      - sunday
+      type: string
+      description: |-
+        * `monday` - Dushanba
+        * `tuesday` - Seshanba
+        * `wednesday` - Chorshanba
+        * `thursday` - Payshanba
+        * `friday` - Juma
+        * `saturday` - Shanba
+        * `sunday` - Yakshanba
+    DifficultyEnum:
+      enum:
+      - easy
+      - medium
+      - hard
+      type: string
+      description: |-
+        * `easy` - Oson
+        * `medium` - O'rta
+        * `hard` - Qiyin
+    LessonCreate:
+      type: object
+      description: Dars yaratish uchun serializer
+      properties:
+        schedule:
+          type: string
+          format: uuid
+          nullable: true
+          title: Jadval
+        group:
+          type: string
+          format: uuid
+          title: Guruh
+        subject:
+          type: string
+          format: uuid
+          title: Fan
+        teacher:
+          type: string
+          format: uuid
+          nullable: true
+          title: O'qituvchi
+        date:
+          type: string
+          format: date
+          title: Dars sanasi
+        start_time:
+          type: string
+          format: time
+          title: Boshlanish vaqti
+        end_time:
+          type: string
+          format: time
+          title: Tugash vaqti
+        room:
+          type: string
+          title: Xona/Sinf
+          maxLength: 50
+        topic:
+          type: string
+          title: Dars mavzusi
+          maxLength: 255
+        description:
+          type: string
+          title: Tavsif
+        status:
+          allOf:
+          - $ref: '#/components/schemas/StatusCf1Enum'
+          title: Holat
+        related_quiz_subject:
+          type: string
+          format: uuid
+          nullable: true
+          title: Test fani (davomat uchun)
+          description: Agar student shu fandan test topshirsa, darsga kelgan deb hisoblanadi
+        auto_attendance_enabled:
+          type: boolean
+          title: Avtomatik davomat yoqilgan
+          description: Test orqali avtomatik davomat olinsinmi?
+        attendance_window_before:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Darsdan oldin (daqiqa)
+          description: Darsdan necha daqiqa oldin test topshirsa davomat olinadi
+        attendance_window_after:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Darsdan keyin (daqiqa)
+          description: Darsdan necha daqiqa keyin test topshirsa davomat olinadi
+      required:
+      - date
+      - end_time
+      - group
+      - start_time
+      - subject
+    LessonCreateRequest:
+      type: object
+      description: Dars yaratish uchun serializer
+      properties:
+        schedule:
+          type: string
+          format: uuid
+          nullable: true
+          title: Jadval
+        group:
+          type: string
+          format: uuid
+          title: Guruh
+        subject:
+          type: string
+          format: uuid
+          title: Fan
+        teacher:
+          type: string
+          format: uuid
+          nullable: true
+          title: O'qituvchi
+        date:
+          type: string
+          format: date
+          title: Dars sanasi
+        start_time:
+          type: string
+          format: time
+          title: Boshlanish vaqti
+        end_time:
+          type: string
+          format: time
+          title: Tugash vaqti
+        room:
+          type: string
+          title: Xona/Sinf
+          maxLength: 50
+        topic:
+          type: string
+          title: Dars mavzusi
+          maxLength: 255
+        description:
+          type: string
+          title: Tavsif
+        status:
+          allOf:
+          - $ref: '#/components/schemas/StatusCf1Enum'
+          title: Holat
+        related_quiz_subject:
+          type: string
+          format: uuid
+          nullable: true
+          title: Test fani (davomat uchun)
+          description: Agar student shu fandan test topshirsa, darsga kelgan deb hisoblanadi
+        auto_attendance_enabled:
+          type: boolean
+          title: Avtomatik davomat yoqilgan
+          description: Test orqali avtomatik davomat olinsinmi?
+        attendance_window_before:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Darsdan oldin (daqiqa)
+          description: Darsdan necha daqiqa oldin test topshirsa davomat olinadi
+        attendance_window_after:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Darsdan keyin (daqiqa)
+          description: Darsdan necha daqiqa keyin test topshirsa davomat olinadi
+      required:
+      - date
+      - end_time
+      - group
+      - start_time
+      - subject
+    LessonDetail:
+      type: object
+      description: Dars tafsiloti uchun serializer
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        schedule:
+          allOf:
+          - $ref: '#/components/schemas/ScheduleList'
+          readOnly: true
+        group:
+          type: string
+          readOnly: true
+        subject:
+          allOf:
+          - $ref: '#/components/schemas/SubjectList'
+          readOnly: true
+        teacher:
+          allOf:
+          - $ref: '#/components/schemas/TeacherList'
+          readOnly: true
+        date:
+          type: string
+          format: date
+          title: Dars sanasi
+        start_time:
+          type: string
+          format: time
+          title: Boshlanish vaqti
+        end_time:
+          type: string
+          format: time
+          title: Tugash vaqti
+        room:
+          type: string
+          title: Xona/Sinf
+          maxLength: 50
+        topic:
+          type: string
+          title: Dars mavzusi
+          maxLength: 255
+        description:
+          type: string
+          title: Tavsif
+        status:
+          allOf:
+          - $ref: '#/components/schemas/StatusCf1Enum'
+          title: Holat
+        related_quiz_subject:
+          allOf:
+          - $ref: '#/components/schemas/SubjectList'
+          readOnly: true
+        auto_attendance_enabled:
+          type: boolean
+          title: Avtomatik davomat yoqilgan
+          description: Test orqali avtomatik davomat olinsinmi?
+        attendance_window_before:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Darsdan oldin (daqiqa)
+          description: Darsdan necha daqiqa oldin test topshirsa davomat olinadi
+        attendance_window_after:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Darsdan keyin (daqiqa)
+          description: Darsdan necha daqiqa keyin test topshirsa davomat olinadi
+        attendance_stats:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Yaratilgan vaqti
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+          title: O'zgartirilgan vaqti
+      required:
+      - attendance_stats
+      - created_at
+      - date
+      - end_time
+      - group
+      - id
+      - related_quiz_subject
+      - schedule
+      - start_time
+      - subject
+      - teacher
+      - updated_at
+    LessonList:
+      type: object
+      description: Darslar ro'yxati uchun serializer
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        group:
+          type: string
+          format: uuid
+          title: Guruh
+        group_name:
+          type: string
+          readOnly: true
+        subject:
+          type: string
+          format: uuid
+          title: Fan
+        subject_name:
+          type: string
+          readOnly: true
+        teacher:
+          type: string
+          format: uuid
+          nullable: true
+          title: O'qituvchi
+        teacher_name:
+          type: string
+          readOnly: true
+        date:
+          type: string
+          format: date
+          title: Dars sanasi
+        start_time:
+          type: string
+          format: time
+          title: Boshlanish vaqti
+        end_time:
+          type: string
+          format: time
+          title: Tugash vaqti
+        room:
+          type: string
+          title: Xona/Sinf
+          maxLength: 50
+        topic:
+          type: string
+          title: Dars mavzusi
+          maxLength: 255
+        status:
+          allOf:
+          - $ref: '#/components/schemas/StatusCf1Enum'
+          title: Holat
+        auto_attendance_enabled:
+          type: boolean
+          title: Avtomatik davomat yoqilgan
+          description: Test orqali avtomatik davomat olinsinmi?
+        attendance_count:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Yaratilgan vaqti
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+          title: O'zgartirilgan vaqti
+      required:
+      - attendance_count
+      - created_at
+      - date
+      - end_time
+      - group
+      - group_name
+      - id
+      - start_time
+      - subject
+      - subject_name
+      - teacher_name
+      - updated_at
+    LessonUpdate:
+      type: object
+      description: Dars yangilash uchun serializer
+      properties:
+        teacher:
+          type: string
+          format: uuid
+          nullable: true
+          title: O'qituvchi
+        start_time:
+          type: string
+          format: time
+          title: Boshlanish vaqti
+        end_time:
+          type: string
+          format: time
+          title: Tugash vaqti
+        room:
+          type: string
+          title: Xona/Sinf
+          maxLength: 50
+        topic:
+          type: string
+          title: Dars mavzusi
+          maxLength: 255
+        description:
+          type: string
+          title: Tavsif
+        status:
+          allOf:
+          - $ref: '#/components/schemas/StatusCf1Enum'
+          title: Holat
+        related_quiz_subject:
+          type: string
+          format: uuid
+          nullable: true
+          title: Test fani (davomat uchun)
+          description: Agar student shu fandan test topshirsa, darsga kelgan deb hisoblanadi
+        auto_attendance_enabled:
+          type: boolean
+          title: Avtomatik davomat yoqilgan
+          description: Test orqali avtomatik davomat olinsinmi?
+        attendance_window_before:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Darsdan oldin (daqiqa)
+          description: Darsdan necha daqiqa oldin test topshirsa davomat olinadi
+        attendance_window_after:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Darsdan keyin (daqiqa)
+          description: Darsdan necha daqiqa keyin test topshirsa davomat olinadi
+      required:
+      - end_time
+      - start_time
+    LessonUpdateRequest:
+      type: object
+      description: Dars yangilash uchun serializer
+      properties:
+        teacher:
+          type: string
+          format: uuid
+          nullable: true
+          title: O'qituvchi
+        start_time:
+          type: string
+          format: time
+          title: Boshlanish vaqti
+        end_time:
+          type: string
+          format: time
+          title: Tugash vaqti
+        room:
+          type: string
+          title: Xona/Sinf
+          maxLength: 50
+        topic:
+          type: string
+          title: Dars mavzusi
+          maxLength: 255
+        description:
+          type: string
+          title: Tavsif
+        status:
+          allOf:
+          - $ref: '#/components/schemas/StatusCf1Enum'
+          title: Holat
+        related_quiz_subject:
+          type: string
+          format: uuid
+          nullable: true
+          title: Test fani (davomat uchun)
+          description: Agar student shu fandan test topshirsa, darsga kelgan deb hisoblanadi
+        auto_attendance_enabled:
+          type: boolean
+          title: Avtomatik davomat yoqilgan
+          description: Test orqali avtomatik davomat olinsinmi?
+        attendance_window_before:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Darsdan oldin (daqiqa)
+          description: Darsdan necha daqiqa oldin test topshirsa davomat olinadi
+        attendance_window_after:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Darsdan keyin (daqiqa)
+          description: Darsdan necha daqiqa keyin test topshirsa davomat olinadi
+      required:
+      - end_time
+      - start_time
+    PaginatedAttendanceListList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/AttendanceList'
+    PaginatedAttendanceStatisticsList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/AttendanceStatistics'
+    PaginatedLessonListList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/LessonList'
+    PaginatedQuestionListList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/QuestionList'
+    PaginatedQuizAttemptList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/QuizAttempt'
+    PaginatedQuizListList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/QuizList'
+    PaginatedScheduleListList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/ScheduleList'
+    PaginatedStudentGroupListList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/StudentGroupList'
+    PaginatedStudentListList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/StudentList'
+    PaginatedSubjectListList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/SubjectList'
+    PaginatedTeacherListList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/TeacherList'
+    PatchedAttendanceUpdateRequest:
+      type: object
+      description: Davomat yangilash uchun serializer
+      properties:
+        status:
+          allOf:
+          - $ref: '#/components/schemas/StatusBbcEnum'
+          title: Holat
+        notes:
+          type: string
+          title: Izoh
+    PatchedLessonUpdateRequest:
+      type: object
+      description: Dars yangilash uchun serializer
+      properties:
+        teacher:
+          type: string
+          format: uuid
+          nullable: true
+          title: O'qituvchi
+        start_time:
+          type: string
+          format: time
+          title: Boshlanish vaqti
+        end_time:
+          type: string
+          format: time
+          title: Tugash vaqti
+        room:
+          type: string
+          title: Xona/Sinf
+          maxLength: 50
+        topic:
+          type: string
+          title: Dars mavzusi
+          maxLength: 255
+        description:
+          type: string
+          title: Tavsif
+        status:
+          allOf:
+          - $ref: '#/components/schemas/StatusCf1Enum'
+          title: Holat
+        related_quiz_subject:
+          type: string
+          format: uuid
+          nullable: true
+          title: Test fani (davomat uchun)
+          description: Agar student shu fandan test topshirsa, darsga kelgan deb hisoblanadi
+        auto_attendance_enabled:
+          type: boolean
+          title: Avtomatik davomat yoqilgan
+          description: Test orqali avtomatik davomat olinsinmi?
+        attendance_window_before:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Darsdan oldin (daqiqa)
+          description: Darsdan necha daqiqa oldin test topshirsa davomat olinadi
+        attendance_window_after:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Darsdan keyin (daqiqa)
+          description: Darsdan necha daqiqa keyin test topshirsa davomat olinadi
+    PatchedQuestionUpdateRequest:
+      type: object
+      description: Savol yangilash uchun serializer
+      properties:
+        question_text:
+          type: string
+          minLength: 1
+          title: Savol matni
+        time_limit:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Vaqt chegarasi (soniyalarda)
+        cooldown:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Cooldown (soniyalarda)
+        difficulty:
+          allOf:
+          - $ref: '#/components/schemas/DifficultyEnum'
+          title: Qiyinlik darajasi
+        order:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Tartib
+    PatchedScheduleCreateUpdateRequest:
+      type: object
+      description: Jadval yaratish va yangilash uchun serializer
+      properties:
+        group:
+          type: string
+          format: uuid
+          title: Guruh
+        subject:
+          type: string
+          format: uuid
+          title: Fan
+        teacher:
+          type: string
+          format: uuid
+          nullable: true
+          title: O'qituvchi
+        day_of_week:
+          allOf:
+          - $ref: '#/components/schemas/DayOfWeekEnum'
+          title: Hafta kuni
+        start_time:
+          type: string
+          format: time
+          title: Boshlanish vaqti
+        end_time:
+          type: string
+          format: time
+          title: Tugash vaqti
+        room:
+          type: string
+          title: Xona/Sinf
+          maxLength: 50
+        is_active:
+          type: boolean
+          title: Faolmi?
+    PatchedStudentGroupCreateUpdateRequest:
+      type: object
+      description: StudentGroup yaratish va yangilash uchun serializer
+      properties:
+        name:
+          type: string
+          minLength: 1
+          title: Guruh nomi
+          maxLength: 255
+        grade:
+          type: integer
+          maximum: 32767
+          minimum: -32768
+          title: Sinfi
+    PatchedStudentUpdateRequest:
+      type: object
+      description: Student yangilash uchun serializer
+      properties:
+        group:
+          type: string
+          format: uuid
+          nullable: true
+          title: Guruh
+        date_of_birth:
+          type: string
+          format: date
+          nullable: true
+          title: Tug'ilgan sana
+        address:
+          type: string
+          nullable: true
+          title: Manzil
+    PatchedSubjectCreateUpdateRequest:
+      type: object
+      description: Fan yaratish va yangilash uchun serializer
+      properties:
+        name:
+          type: string
+          minLength: 1
+          title: Fan nomi
+          maxLength: 255
+        description:
+          type: string
+          title: Tavsif
+        order:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Tartib
+    PatchedTeacherUpdateRequest:
+      type: object
+      description: Teacher yangilash uchun serializer
+      properties:
+        subjects:
+          type: string
+          title: Fanlar
+          maxLength: 500
+        experience_years:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Tajriba yillari
+        bio:
+          type: string
+          title: Biografiya
+    QuestionCreate:
+      type: object
+      description: Savol yaratish uchun serializer
+      properties:
+        subject:
+          type: string
+          format: uuid
+          title: Fan
+        question_text:
+          type: string
+          title: Savol matni
+        time_limit:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Vaqt chegarasi (soniyalarda)
+        cooldown:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Cooldown (soniyalarda)
+        difficulty:
+          allOf:
+          - $ref: '#/components/schemas/DifficultyEnum'
+          title: Qiyinlik darajasi
+        order:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Tartib
+      required:
+      - question_text
+      - subject
+    QuestionCreateRequest:
+      type: object
+      description: Savol yaratish uchun serializer
+      properties:
+        subject:
+          type: string
+          format: uuid
+          title: Fan
+        question_text:
+          type: string
+          minLength: 1
+          title: Savol matni
+        time_limit:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Vaqt chegarasi (soniyalarda)
+        cooldown:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Cooldown (soniyalarda)
+        difficulty:
+          allOf:
+          - $ref: '#/components/schemas/DifficultyEnum'
+          title: Qiyinlik darajasi
+        order:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Tartib
+        answers:
+          type: array
+          items:
+            $ref: '#/components/schemas/AnswerRequest'
+          writeOnly: true
+      required:
+      - answers
+      - question_text
+      - subject
+    QuestionDetail:
+      type: object
+      description: Savol tafsiloti uchun serializer (to'g'ri javob ko'rsatiladi -
+        admin uchun)
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        subject:
+          allOf:
+          - $ref: '#/components/schemas/SubjectList'
+          readOnly: true
+        question_text:
+          type: string
+          title: Savol matni
+        time_limit:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Vaqt chegarasi (soniyalarda)
+        cooldown:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Cooldown (soniyalarda)
+        difficulty:
+          allOf:
+          - $ref: '#/components/schemas/DifficultyEnum'
+          title: Qiyinlik darajasi
+        order:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Tartib
+        answers:
+          type: array
+          items:
+            $ref: '#/components/schemas/Answer'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Yaratilgan vaqti
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+          title: O'zgartirilgan vaqti
+      required:
+      - answers
+      - created_at
+      - id
+      - question_text
+      - subject
+      - updated_at
+    QuestionList:
+      type: object
+      description: Savollar ro'yxati uchun serializer
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        subject:
+          type: string
+          format: uuid
+          title: Fan
+        subject_name:
+          type: string
+          readOnly: true
+        question_text:
+          type: string
+          title: Savol matni
+        time_limit:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Vaqt chegarasi (soniyalarda)
+        cooldown:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Cooldown (soniyalarda)
+        difficulty:
+          allOf:
+          - $ref: '#/components/schemas/DifficultyEnum'
+          title: Qiyinlik darajasi
+        order:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Tartib
+        answers_count:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Yaratilgan vaqti
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+          title: O'zgartirilgan vaqti
+      required:
+      - answers_count
+      - created_at
+      - id
+      - question_text
+      - subject
+      - subject_name
+      - updated_at
+    QuestionUpdate:
+      type: object
+      description: Savol yangilash uchun serializer
+      properties:
+        question_text:
+          type: string
+          title: Savol matni
+        time_limit:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Vaqt chegarasi (soniyalarda)
+        cooldown:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Cooldown (soniyalarda)
+        difficulty:
+          allOf:
+          - $ref: '#/components/schemas/DifficultyEnum'
+          title: Qiyinlik darajasi
+        order:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Tartib
+      required:
+      - question_text
+    QuestionUpdateRequest:
+      type: object
+      description: Savol yangilash uchun serializer
+      properties:
+        question_text:
+          type: string
+          minLength: 1
+          title: Savol matni
+        time_limit:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Vaqt chegarasi (soniyalarda)
+        cooldown:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Cooldown (soniyalarda)
+        difficulty:
+          allOf:
+          - $ref: '#/components/schemas/DifficultyEnum'
+          title: Qiyinlik darajasi
+        order:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Tartib
+      required:
+      - question_text
+    QuizAttempt:
+      type: object
+      description: Test urinishlari statistikasi serializer
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        student:
+          allOf:
+          - $ref: '#/components/schemas/StudentList'
+          readOnly: true
+        subject:
+          allOf:
+          - $ref: '#/components/schemas/SubjectList'
+          readOnly: true
+        total_attempts:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Jami urinishlar
+        total_questions_answered:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Jami javob berilgan savollar
+        total_correct:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Jami to'g'ri javoblar
+        total_wrong:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Jami noto'g'ri javoblar
+        average_score:
+          type: number
+          format: double
+          title: O'rtacha ball
+        best_score:
+          type: number
+          format: double
+          title: Eng yaxshi ball
+        success_rate:
+          type: string
+          readOnly: true
+        last_attempt_date:
+          type: string
+          format: date-time
+          nullable: true
+          title: Oxirgi urinish sanasi
+      required:
+      - id
+      - student
+      - subject
+      - success_rate
+    QuizCreate:
+      type: object
+      description: Test sessiyasi yaratish uchun serializer
+      properties:
+        subject:
+          type: string
+          format: uuid
+          title: Fan
+        title:
+          type: string
+          title: Test nomi
+          maxLength: 255
+        total_questions:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Jami savollar soni
+      required:
+      - subject
+      - title
+    QuizCreateRequest:
+      type: object
+      description: Test sessiyasi yaratish uchun serializer
+      properties:
+        student_id:
+          type: string
+          format: uuid
+          writeOnly: true
+        subject:
+          type: string
+          format: uuid
+          title: Fan
+        title:
+          type: string
+          minLength: 1
+          title: Test nomi
+          maxLength: 255
+        total_questions:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Jami savollar soni
+      required:
+      - student_id
+      - subject
+      - title
+    QuizDetail:
+      type: object
+      description: Test sessiyasi tafsiloti uchun serializer
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        student:
+          allOf:
+          - $ref: '#/components/schemas/StudentList'
+          readOnly: true
+        subject:
+          allOf:
+          - $ref: '#/components/schemas/SubjectList'
+          readOnly: true
+        title:
+          type: string
+          title: Test nomi
+          maxLength: 255
+        started_at:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Boshlangan vaqt
+        completed_at:
+          type: string
+          format: date-time
+          nullable: true
+          title: Tugatilgan vaqt
+        is_completed:
+          type: boolean
+          title: Tugatilganmi?
+        total_questions:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Jami savollar soni
+        correct_answers:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: To'g'ri javoblar soni
+        wrong_answers:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Noto'g'ri javoblar soni
+        score:
+          type: number
+          format: double
+          title: Ball
+        percentage:
+          type: number
+          format: double
+          title: Foiz
+        student_answers:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Yaratilgan vaqti
+      required:
+      - created_at
+      - id
+      - started_at
+      - student
+      - student_answers
+      - subject
+      - title
+    QuizList:
+      type: object
+      description: Test sessiyalari ro'yxati uchun serializer
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        student:
+          allOf:
+          - $ref: '#/components/schemas/StudentList'
+          readOnly: true
+        subject:
+          type: string
+          format: uuid
+          title: Fan
+        subject_name:
+          type: string
+          readOnly: true
+        title:
+          type: string
+          title: Test nomi
+          maxLength: 255
+        started_at:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Boshlangan vaqt
+        completed_at:
+          type: string
+          format: date-time
+          nullable: true
+          title: Tugatilgan vaqt
+        is_completed:
+          type: boolean
+          title: Tugatilganmi?
+        total_questions:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Jami savollar soni
+        correct_answers:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: To'g'ri javoblar soni
+        wrong_answers:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Noto'g'ri javoblar soni
+        score:
+          type: number
+          format: double
+          title: Ball
+        percentage:
+          type: number
+          format: double
+          title: Foiz
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Yaratilgan vaqti
+      required:
+      - created_at
+      - id
+      - started_at
+      - student
+      - subject
+      - subject_name
+      - title
+    QuizListRequest:
+      type: object
+      description: Test sessiyalari ro'yxati uchun serializer
+      properties:
+        subject:
+          type: string
+          format: uuid
+          title: Fan
+        title:
+          type: string
+          minLength: 1
+          title: Test nomi
+          maxLength: 255
+        completed_at:
+          type: string
+          format: date-time
+          nullable: true
+          title: Tugatilgan vaqt
+        is_completed:
+          type: boolean
+          title: Tugatilganmi?
+        total_questions:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Jami savollar soni
+        correct_answers:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: To'g'ri javoblar soni
+        wrong_answers:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Noto'g'ri javoblar soni
+        score:
+          type: number
+          format: double
+          title: Ball
+        percentage:
+          type: number
+          format: double
+          title: Foiz
+      required:
+      - subject
+      - title
+    QuizStartRequest:
+      type: object
+      description: Test boshlash uchun serializer
+      properties:
+        subject_id:
+          type: string
+          format: uuid
+        questions_count:
+          type: integer
+          maximum: 50
+          minimum: 1
+          default: 10
+      required:
+      - subject_id
+    QuizSubmitAnswerRequest:
+      type: object
+      description: Javob yuborish uchun serializer
+      properties:
+        quiz_id:
+          type: string
+          format: uuid
+        question_id:
+          type: string
+          format: uuid
+        answer_id:
+          type: string
+          format: uuid
+        time_taken:
+          type: integer
+          minimum: 0
+      required:
+      - answer_id
+      - question_id
+      - quiz_id
+      - time_taken
+    ScheduleCreateUpdate:
+      type: object
+      description: Jadval yaratish va yangilash uchun serializer
+      properties:
+        group:
+          type: string
+          format: uuid
+          title: Guruh
+        subject:
+          type: string
+          format: uuid
+          title: Fan
+        teacher:
+          type: string
+          format: uuid
+          nullable: true
+          title: O'qituvchi
+        day_of_week:
+          allOf:
+          - $ref: '#/components/schemas/DayOfWeekEnum'
+          title: Hafta kuni
+        start_time:
+          type: string
+          format: time
+          title: Boshlanish vaqti
+        end_time:
+          type: string
+          format: time
+          title: Tugash vaqti
+        room:
+          type: string
+          title: Xona/Sinf
+          maxLength: 50
+        is_active:
+          type: boolean
+          title: Faolmi?
+      required:
+      - day_of_week
+      - end_time
+      - group
+      - start_time
+      - subject
+    ScheduleCreateUpdateRequest:
+      type: object
+      description: Jadval yaratish va yangilash uchun serializer
+      properties:
+        group:
+          type: string
+          format: uuid
+          title: Guruh
+        subject:
+          type: string
+          format: uuid
+          title: Fan
+        teacher:
+          type: string
+          format: uuid
+          nullable: true
+          title: O'qituvchi
+        day_of_week:
+          allOf:
+          - $ref: '#/components/schemas/DayOfWeekEnum'
+          title: Hafta kuni
+        start_time:
+          type: string
+          format: time
+          title: Boshlanish vaqti
+        end_time:
+          type: string
+          format: time
+          title: Tugash vaqti
+        room:
+          type: string
+          title: Xona/Sinf
+          maxLength: 50
+        is_active:
+          type: boolean
+          title: Faolmi?
+      required:
+      - day_of_week
+      - end_time
+      - group
+      - start_time
+      - subject
+    ScheduleDetail:
+      type: object
+      description: Jadval tafsiloti uchun serializer
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        group:
+          type: string
+          readOnly: true
+        subject:
+          allOf:
+          - $ref: '#/components/schemas/SubjectList'
+          readOnly: true
+        teacher:
+          allOf:
+          - $ref: '#/components/schemas/TeacherList'
+          readOnly: true
+        day_of_week:
+          allOf:
+          - $ref: '#/components/schemas/DayOfWeekEnum'
+          title: Hafta kuni
+        start_time:
+          type: string
+          format: time
+          title: Boshlanish vaqti
+        end_time:
+          type: string
+          format: time
+          title: Tugash vaqti
+        room:
+          type: string
+          title: Xona/Sinf
+          maxLength: 50
+        is_active:
+          type: boolean
+          title: Faolmi?
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Yaratilgan vaqti
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+          title: O'zgartirilgan vaqti
+      required:
+      - created_at
+      - day_of_week
+      - end_time
+      - group
+      - id
+      - start_time
+      - subject
+      - teacher
+      - updated_at
+    ScheduleList:
+      type: object
+      description: Jadval ro'yxati uchun serializer
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        group:
+          type: string
+          format: uuid
+          title: Guruh
+        group_name:
+          type: string
+          readOnly: true
+        subject:
+          type: string
+          format: uuid
+          title: Fan
+        subject_name:
+          type: string
+          readOnly: true
+        teacher:
+          type: string
+          format: uuid
+          nullable: true
+          title: O'qituvchi
+        teacher_name:
+          type: string
+          readOnly: true
+        day_of_week:
+          allOf:
+          - $ref: '#/components/schemas/DayOfWeekEnum'
+          title: Hafta kuni
+        start_time:
+          type: string
+          format: time
+          title: Boshlanish vaqti
+        end_time:
+          type: string
+          format: time
+          title: Tugash vaqti
+        room:
+          type: string
+          title: Xona/Sinf
+          maxLength: 50
+        is_active:
+          type: boolean
+          title: Faolmi?
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Yaratilgan vaqti
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+          title: O'zgartirilgan vaqti
+      required:
+      - created_at
+      - day_of_week
+      - end_time
+      - group
+      - group_name
+      - id
+      - start_time
+      - subject
+      - subject_name
+      - teacher_name
+      - updated_at
+    StatusBbcEnum:
+      enum:
+      - present
+      - absent
+      - late
+      - excused
+      type: string
+      description: |-
+        * `present` - Keldi
+        * `absent` - Kelmadi
+        * `late` - Kech qoldi
+        * `excused` - Sababli
+    StatusCf1Enum:
+      enum:
+      - scheduled
+      - ongoing
+      - completed
+      - cancelled
+      type: string
+      description: |-
+        * `scheduled` - Rejalashtirilgan
+        * `ongoing` - Davom etmoqda
+        * `completed` - Tugallangan
+        * `cancelled` - Bekor qilingan
+    StudentAnswerDetail:
+      type: object
+      description: Talaba javobi tafsiloti serializer
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        question:
+          type: string
+          format: uuid
+          title: Savol
+        question_text:
+          type: string
+          readOnly: true
+        selected_answer:
+          type: string
+          format: uuid
+          nullable: true
+          title: Tanlangan javob
+        selected_answer_text:
+          type: string
+          readOnly: true
+        correct_answer:
+          type: string
+          readOnly: true
+        is_correct:
+          type: boolean
+          title: To'g'rimi?
+        time_taken:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Sarflangan vaqt (soniyalarda)
+        answered_at:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Javob berilgan vaqt
+      required:
+      - answered_at
+      - correct_answer
+      - id
+      - question
+      - question_text
+      - selected_answer_text
+    StudentCreate:
+      type: object
+      description: Student yaratish uchun serializer
+      properties:
+        group:
+          type: string
+          format: uuid
+          nullable: true
+          title: Guruh
+        date_of_birth:
+          type: string
+          format: date
+          nullable: true
+          title: Tug'ilgan sana
+        address:
+          type: string
+          nullable: true
+          title: Manzil
+    StudentCreateRequest:
+      type: object
+      description: Student yaratish uchun serializer
+      properties:
+        user_id:
+          type: string
+          format: uuid
+          writeOnly: true
+        group:
+          type: string
+          format: uuid
+          nullable: true
+          title: Guruh
+        date_of_birth:
+          type: string
+          format: date
+          nullable: true
+          title: Tug'ilgan sana
+        address:
+          type: string
+          nullable: true
+          title: Manzil
+      required:
+      - user_id
+    StudentDetail:
+      type: object
+      description: Student tafsiloti uchun serializer
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        user:
+          allOf:
+          - $ref: '#/components/schemas/User'
+          readOnly: true
+        group:
+          allOf:
+          - $ref: '#/components/schemas/StudentGroupList'
+          readOnly: true
+        date_of_birth:
+          type: string
+          format: date
+          nullable: true
+          title: Tug'ilgan sana
+        age:
+          type: string
+          readOnly: true
+        address:
+          type: string
+          nullable: true
+          title: Manzil
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Yaratilgan vaqti
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+          title: O'zgartirilgan vaqti
+      required:
+      - age
+      - created_at
+      - group
+      - id
+      - updated_at
+      - user
+    StudentGroupCreateUpdate:
+      type: object
+      description: StudentGroup yaratish va yangilash uchun serializer
+      properties:
+        name:
+          type: string
+          title: Guruh nomi
+          maxLength: 255
+        grade:
+          type: integer
+          maximum: 32767
+          minimum: -32768
+          title: Sinfi
+      required:
+      - name
+    StudentGroupCreateUpdateRequest:
+      type: object
+      description: StudentGroup yaratish va yangilash uchun serializer
+      properties:
+        name:
+          type: string
+          minLength: 1
+          title: Guruh nomi
+          maxLength: 255
+        grade:
+          type: integer
+          maximum: 32767
+          minimum: -32768
+          title: Sinfi
+      required:
+      - name
+    StudentGroupDetail:
+      type: object
+      description: StudentGroup tafsiloti uchun serializer
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          title: Guruh nomi
+          maxLength: 255
+        grade:
+          type: integer
+          maximum: 32767
+          minimum: -32768
+          title: Sinfi
+        students_count:
+          type: string
+          readOnly: true
+        students:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Yaratilgan vaqti
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+          title: O'zgartirilgan vaqti
+      required:
+      - created_at
+      - id
+      - name
+      - students
+      - students_count
+      - updated_at
+    StudentGroupList:
+      type: object
+      description: StudentGroup ro'yxati uchun serializer
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          title: Guruh nomi
+          maxLength: 255
+        grade:
+          type: integer
+          maximum: 32767
+          minimum: -32768
+          title: Sinfi
+        students_count:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Yaratilgan vaqti
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+          title: O'zgartirilgan vaqti
+      required:
+      - created_at
+      - id
+      - name
+      - students_count
+      - updated_at
+    StudentList:
+      type: object
+      description: Student ro'yxati uchun serializer
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        user:
+          allOf:
+          - $ref: '#/components/schemas/User'
+          readOnly: true
+        full_name:
+          type: string
+          readOnly: true
+        group:
+          type: string
+          format: uuid
+          nullable: true
+          title: Guruh
+        group_name:
+          type: string
+          readOnly: true
+        date_of_birth:
+          type: string
+          format: date
+          nullable: true
+          title: Tug'ilgan sana
+        address:
+          type: string
+          nullable: true
+          title: Manzil
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Yaratilgan vaqti
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+          title: O'zgartirilgan vaqti
+      required:
+      - created_at
+      - full_name
+      - group_name
+      - id
+      - updated_at
+      - user
+    StudentListRequest:
+      type: object
+      description: Student ro'yxati uchun serializer
+      properties:
+        group:
+          type: string
+          format: uuid
+          nullable: true
+          title: Guruh
+        date_of_birth:
+          type: string
+          format: date
+          nullable: true
+          title: Tug'ilgan sana
+        address:
+          type: string
+          nullable: true
+          title: Manzil
+    StudentUpdate:
+      type: object
+      description: Student yangilash uchun serializer
+      properties:
+        group:
+          type: string
+          format: uuid
+          nullable: true
+          title: Guruh
+        date_of_birth:
+          type: string
+          format: date
+          nullable: true
+          title: Tug'ilgan sana
+        address:
+          type: string
+          nullable: true
+          title: Manzil
+    StudentUpdateRequest:
+      type: object
+      description: Student yangilash uchun serializer
+      properties:
+        group:
+          type: string
+          format: uuid
+          nullable: true
+          title: Guruh
+        date_of_birth:
+          type: string
+          format: date
+          nullable: true
+          title: Tug'ilgan sana
+        address:
+          type: string
+          nullable: true
+          title: Manzil
+    SubjectCreateUpdate:
+      type: object
+      description: Fan yaratish va yangilash uchun serializer
+      properties:
+        name:
+          type: string
+          title: Fan nomi
+          maxLength: 255
+        description:
+          type: string
+          title: Tavsif
+        order:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Tartib
+      required:
+      - name
+    SubjectCreateUpdateRequest:
+      type: object
+      description: Fan yaratish va yangilash uchun serializer
+      properties:
+        name:
+          type: string
+          minLength: 1
+          title: Fan nomi
+          maxLength: 255
+        description:
+          type: string
+          title: Tavsif
+        order:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Tartib
+      required:
+      - name
+    SubjectDetail:
+      type: object
+      description: Fan tafsiloti uchun serializer
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          title: Fan nomi
+          maxLength: 255
+        description:
+          type: string
+          title: Tavsif
+        order:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Tartib
+        questions_count:
+          type: string
+          readOnly: true
+        total_quizzes:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Yaratilgan vaqti
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+          title: O'zgartirilgan vaqti
+      required:
+      - created_at
+      - id
+      - name
+      - questions_count
+      - total_quizzes
+      - updated_at
+    SubjectList:
+      type: object
+      description: Fanlar ro'yxati uchun serializer
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          title: Fan nomi
+          maxLength: 255
+        description:
+          type: string
+          title: Tavsif
+        order:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Tartib
+        questions_count:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Yaratilgan vaqti
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+          title: O'zgartirilgan vaqti
+      required:
+      - created_at
+      - id
+      - name
+      - questions_count
+      - updated_at
+    TeacherCreate:
+      type: object
+      description: Teacher yaratish uchun serializer
+      properties:
+        subjects:
+          type: string
+          title: Fanlar
+          maxLength: 500
+        experience_years:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Tajriba yillari
+        bio:
+          type: string
+          title: Biografiya
+    TeacherCreateRequest:
+      type: object
+      description: Teacher yaratish uchun serializer
+      properties:
+        user_id:
+          type: string
+          format: uuid
+          writeOnly: true
+        subjects:
+          type: string
+          title: Fanlar
+          maxLength: 500
+        experience_years:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Tajriba yillari
+        bio:
+          type: string
+          title: Biografiya
+      required:
+      - user_id
+    TeacherDetail:
+      type: object
+      description: Teacher tafsiloti uchun serializer
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        user:
+          allOf:
+          - $ref: '#/components/schemas/User'
+          readOnly: true
+        subjects:
+          type: string
+          title: Fanlar
+          maxLength: 500
+        experience_years:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Tajriba yillari
+        bio:
+          type: string
+          title: Biografiya
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Yaratilgan vaqti
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+          title: O'zgartirilgan vaqti
+      required:
+      - created_at
+      - id
+      - updated_at
+      - user
+    TeacherList:
+      type: object
+      description: Teacher ro'yxati uchun serializer
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        user:
+          allOf:
+          - $ref: '#/components/schemas/User'
+          readOnly: true
+        full_name:
+          type: string
+          readOnly: true
+        subjects:
+          type: string
+          title: Fanlar
+          maxLength: 500
+        experience_years:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Tajriba yillari
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Yaratilgan vaqti
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+          title: O'zgartirilgan vaqti
+      required:
+      - created_at
+      - full_name
+      - id
+      - updated_at
+      - user
+    TeacherUpdate:
+      type: object
+      description: Teacher yangilash uchun serializer
+      properties:
+        subjects:
+          type: string
+          title: Fanlar
+          maxLength: 500
+        experience_years:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Tajriba yillari
+        bio:
+          type: string
+          title: Biografiya
+    TeacherUpdateRequest:
+      type: object
+      description: Teacher yangilash uchun serializer
+      properties:
+        subjects:
+          type: string
+          title: Fanlar
+          maxLength: 500
+        experience_years:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Tajriba yillari
+        bio:
+          type: string
+          title: Biografiya
     TelegramRequestOTPRequest:
       type: object
       description: Telegram user_id orqali OTP so'rash
@@ -132,10 +5003,6 @@ components:
       type: object
       description: Telegram OTP tasdiqlash va JWT token olish
       properties:
-        user_id:
-          type: string
-          minLength: 1
-          description: 'Telegram user ID (Example: ''123456789'')'
         otp:
           type: string
           minLength: 5
@@ -143,7 +5010,6 @@ components:
           maxLength: 5
       required:
       - otp
-      - user_id
     TokenRefresh:
       type: object
       properties:
@@ -172,13 +5038,76 @@ components:
           type: string
           description: JWT refresh token (valid for 30 days)
         user:
-          type: string
+          type: object
+          additionalProperties: {}
           readOnly: true
           description: User information
       required:
       - access
       - refresh
       - user
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        phone_number:
+          type: string
+          title: Telefon raqami
+          pattern: ^\+?[0-9]{7,15}$
+          maxLength: 20
+        first_name:
+          type: string
+          title: Ism
+          maxLength: 150
+        last_name:
+          type: string
+          title: Familiya
+          maxLength: 150
+        email:
+          type: string
+          format: email
+          nullable: true
+          maxLength: 254
+        is_staff:
+          type: boolean
+        date_joined:
+          type: string
+          format: date-time
+      required:
+      - id
+      - phone_number
+    UserRequest:
+      type: object
+      properties:
+        phone_number:
+          type: string
+          minLength: 1
+          title: Telefon raqami
+          pattern: ^\+?[0-9]{7,15}$
+          maxLength: 20
+        first_name:
+          type: string
+          title: Ism
+          maxLength: 150
+        last_name:
+          type: string
+          title: Familiya
+          maxLength: 150
+        email:
+          type: string
+          format: email
+          nullable: true
+          maxLength: 254
+        is_staff:
+          type: boolean
+        date_joined:
+          type: string
+          format: date-time
+      required:
+      - phone_number
   securitySchemes:
     jwtAuth:
       type: http
@@ -187,7 +5116,23 @@ components:
 tags:
 - name: Authentication
   description: Telegram OTP authentication endpoints
-- name: Students
-  description: Student management endpoints
-- name: Teachers
-  description: Teacher management endpoints
+- name: Guruhlar
+  description: Talabalar guruhlari bilan ishlash
+- name: Studentlar
+  description: Studentlar bilan ishlash
+- name: O'qituvchilar
+  description: O'qituvchilar bilan ishlash
+- name: Fanlar
+  description: Test fanlari bilan ishlash
+- name: Savollar
+  description: Test savollari bilan ishlash
+- name: Testlar
+  description: Test sessiyalari va javoblar
+- name: Statistika
+  description: Test statistikasi va natijalar
+- name: Jadval
+  description: Darslar jadvali
+- name: Darslar
+  description: Dars sessiyalari
+- name: Davomat
+  description: Davomat tizimi

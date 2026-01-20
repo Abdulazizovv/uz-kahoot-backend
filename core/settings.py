@@ -68,6 +68,8 @@ INSTALLED_APPS = [
     "apps.botapp",
     "apps.common",
     "apps.students",
+    "apps.quizzes",
+    "apps.attendance",
 ]
 
 AUTH_USER_MODEL = "users.User"
@@ -190,6 +192,13 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
     ],
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 10,
+    'DEFAULT_FILTER_BACKENDS': [
+        'django_filters.rest_framework.DjangoFilterBackend',
+        'rest_framework.filters.SearchFilter',
+        'rest_framework.filters.OrderingFilter',
+    ],
 }
 
 # DRF Spectacular (OpenAPI/Swagger) Configuration
@@ -202,8 +211,16 @@ SPECTACULAR_SETTINGS = {
     'SCHEMA_PATH_PREFIX': r'/api/',
     'TAGS': [
         {'name': 'Authentication', 'description': 'Telegram OTP authentication endpoints'},
-        {'name': 'Students', 'description': 'Student management endpoints'},
-        {'name': 'Teachers', 'description': 'Teacher management endpoints'},
+        {'name': 'Guruhlar', 'description': 'Talabalar guruhlari bilan ishlash'},
+        {'name': 'Studentlar', 'description': 'Studentlar bilan ishlash'},
+        {'name': 'O\'qituvchilar', 'description': 'O\'qituvchilar bilan ishlash'},
+        {'name': 'Fanlar', 'description': 'Test fanlari bilan ishlash'},
+        {'name': 'Savollar', 'description': 'Test savollari bilan ishlash'},
+        {'name': 'Testlar', 'description': 'Test sessiyalari va javoblar'},
+        {'name': 'Statistika', 'description': 'Test statistikasi va natijalar'},
+        {'name': 'Jadval', 'description': 'Darslar jadvali'},
+        {'name': 'Darslar', 'description': 'Dars sessiyalari'},
+        {'name': 'Davomat', 'description': 'Davomat tizimi'},
     ],
     'CONTACT': {
         'name': 'API Support',

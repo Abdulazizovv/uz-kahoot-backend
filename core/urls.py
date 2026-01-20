@@ -32,6 +32,15 @@ urlpatterns = [
     # Auth endpoints
     path('api/auth/', include('auth.users.urls')),
     
+    # Students app endpoints (groups, students, teachers)
+    path('api/students/', include('apps.students.urls')),
+    
+    # Quizzes app endpoints (subjects, questions, quizzes, statistics)
+    path('api/quizzes/', include('apps.quizzes.urls')),
+    
+    # Attendance app endpoints (schedules, lessons, attendance)
+    path('api/attendance/', include('apps.attendance.urls')),
+    
     # API Schema & Docs
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
     path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),

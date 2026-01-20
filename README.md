@@ -1,15 +1,27 @@
-# Django + Aiogram v3 Webhook Template
+# Education Platform - Django + Aiogram v3 Backend
 
-A production-ready template combining Django (5.x) and Aiogram v3 using webhooks (no polling). Includes Docker, Nginx, PostgreSQL, Redis, management commands, tests, and CI scaffold.
+Ta'lim platformasi uchun backend API. Django REST Framework va Telegram bot integratsiyasi bilan.
 
 ## Features
-- Async Django webhook endpoint: `/api/telegram/webhook/<token>/`
-- Telegram secret token header verification
-- Aiogram v3 routers structure
-- Management commands: `setwebhook`, `deletewebhook`
-- Dockerized stack: Django + Postgres + Redis + Nginx
-- Example Nginx config and `.env.example`
-- Sample test for webhook
+- **REST API:** Studentlar, guruhlar va o'qituvchilar uchun to'liq CRUD operatsiyalari
+- **Telegram Bot:** Aiogram v3 bilan webhook orqali integratsiya
+- **Authentication:** JWT token asosida autentifikatsiya
+- **API Documentation:** Swagger/OpenAPI (drf-spectacular)
+- **Dockerized:** Docker compose bilan to'liq stack
+- **Database:** PostgreSQL
+- **Cache/Queue:** Redis + Celery
+
+## API Endpoints
+
+### Asosiy endpointlar:
+- `/api/groups/` - Talabalar guruhlari
+- `/api/students/` - Studentlar
+- `/api/teachers/` - O'qituvchilar
+- `/api/auth/` - Autentifikatsiya
+- `/api/docs/` - Swagger documentation
+- `/api/redoc/` - ReDoc documentation
+
+To'liq API hujjatlari: [API_DOCUMENTATION.md](./API_DOCUMENTATION.md)
 
 ## Quickstart
 
