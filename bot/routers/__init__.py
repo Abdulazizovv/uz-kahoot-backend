@@ -1,10 +1,12 @@
 from aiogram import Dispatcher, Router, F
 from aiogram.filters import CommandStart, Command, StateFilter
+from aiogram.filters.command import CommandObject
 from aiogram.types import Message, ReplyKeyboardRemove
 from aiogram.fsm.context import FSMContext
 import os
 import sys
 import django
+import re
 
 # Django settings ni sozlash
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
@@ -19,6 +21,39 @@ from bot.keyboards.default.registration import get_fullname_keyboard, get_phone_
 
 user_router = Router(name="user-router")
 otp_manager = OTPManager()
+_PHONE_RE = re.compile(r"^\+?\d{7,15}$")
+
+
+def _extract_login_phone(raw_text: str) -> str | None:
+    raw_text = (raw_text or "").strip()
+    if not raw_text.startswith("/login"):
+        return None
+
+    first, *rest = raw_text.split(maxsplit=1)
+    remainder = ""
+
+    if first == "/login" or first.startswith("/login@"):
+        remainder = (rest[0] if rest else "").strip()
+    else:
+        # Handles cases like: "/login+998..." or "/login@botname+998..."
+        after = first[len("/login") :]
+        if after.startswith("@"):
+            bot_and_more = after[1:]
+            m = re.search(r"[+0-9]", bot_and_more)
+            remainder = bot_and_more[m.start() :] if m else ""
+        else:
+            remainder = after
+        if rest:
+            remainder = f"{remainder} {rest[0]}".strip()
+
+    if not remainder:
+        return None
+
+    candidate = remainder.split()[0].replace(" ", "")
+    if not _PHONE_RE.fullmatch(candidate):
+        return ""
+
+    return candidate if candidate.startswith("+") else f"+{candidate}"
 
 
 @user_router.message(CommandStart())
@@ -198,17 +233,100 @@ async def cmd_help(message: Message):
         "Commands:",
         "/start - Start the bot",
         "/login - Tizimga kirish uchun OTP olish",
+        "/login +998901234567 - (faqat superuser) istalgan hisob uchun OTP olish",
         "/help - This help message",
     ]
     await message.answer("\n".join(text))
 
 
 @user_router.message(Command("login"))
-async def cmd_login(message: Message):
+async def cmd_login(message: Message, command: CommandObject | None = None):
     """
     Tizimga kirish uchun OTP kod so'rash.
     """
     user_id = str(message.from_user.id)
+
+    # Superuser flow: /login <phone_number>
+    target_phone = ((command.args or "").strip().split()[0] if command and command.args else "")
+    if target_phone and target_phone.startswith("@"):
+        # Defensive: ignore accidental mentions
+        target_phone = ""
+    if target_phone:
+        target_phone = target_phone.replace(" ", "")
+        if not target_phone.startswith("+"):
+            target_phone = f"+{target_phone}"
+        if not _PHONE_RE.fullmatch(target_phone):
+            target_phone = ""
+
+    extracted = _extract_login_phone(message.text or message.caption or "")
+    if not target_phone and extracted is not None:
+        # extracted == "" means user provided an invalid phone argument
+        target_phone = extracted
+
+    if target_phone == "":
+        await message.answer(
+            "❌ Telefon raqam formati noto'g'ri.\n\n"
+            "Masalan: /login +998901234567"
+        )
+        return
+
+    if target_phone:
+
+        # Requester must be a linked superuser
+        try:
+            requester_bot_user = await BotUser.objects.aget(user_id=user_id)
+            requester_is_superuser = await User.objects.filter(
+                bot_user=requester_bot_user, is_superuser=True, is_active=True
+            ).aexists()
+        except BotUser.DoesNotExist:
+            requester_is_superuser = False
+
+        if not requester_is_superuser:
+            await message.answer(
+                "❌ Sizda bu buyruqdan foydalanish uchun ruxsat yo'q.\n\n"
+                "O'zingiz uchun kod olish: /login"
+            )
+            return
+
+        # Find target user by phone number (with/without leading +)
+        phone_without_plus = target_phone.lstrip("+")
+        target_user = await User.objects.filter(
+            phone_number__in=[target_phone, phone_without_plus],
+            is_active=True,
+        ).afirst()
+        if not target_user:
+            await message.answer(
+                "❌ Bunday telefon raqam bilan foydalanuvchi topilmadi.\n\n"
+                f"Telefon: <code>{target_phone}</code>"
+            )
+            return
+
+        subject_id = f"user:{target_user.id}"
+
+        if not otp_manager.can_request_otp(subject_id):
+            remaining_time = otp_manager.get_remaining_time(subject_id)
+            await message.answer(
+                f"⏳ Juda ko'p so'rov!\n\n"
+                f"Iltimos, {remaining_time} soniyadan keyin qayta urinib ko'ring."
+            )
+            return
+
+        otp = otp_manager.generate_otp()
+        if not otp_manager.save_otp(subject_id, otp):
+            await message.answer(
+                "❌ Xatolik yuz berdi!\n\n"
+                "Iltimos, keyinroq qayta urinib ko'ring."
+            )
+            return
+
+        await message.answer(
+            "🔐 OTP tayyor.\n\n"
+            f"👤 Hisob: <b>{target_user.get_full_name() or '—'}</b>\n"
+            f"📱 Telefon: <code>{target_user.phone_number}</code>\n"
+            f"🔑 Kod: <code>{otp}</code>\n\n"
+            "⏱ Kod 5 daqiqa davomida amal qiladi."
+        )
+        return
     
     # User ro'yxatdan o'tganligini tekshirish
     try:

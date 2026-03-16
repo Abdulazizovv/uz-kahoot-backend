@@ -213,24 +213,38 @@ def telegram_verify_otp(request):
     
     otp = serializer.validated_data['otp']
     
-    # OTP ni tekshirish va user_id ni olish
-    user_id = otp_manager.verify_otp_by_code(otp)
+    # OTP ni tekshirish va subject_id ni olish
+    # subject_id formatlari:
+    # - "<telegram_user_id>" (legacy) -> BotUser.user_id orqali User topiladi
+    # - "user:<uuid>" (admin/superuser flow) -> User.id orqali User topiladi
+    subject_id = otp_manager.verify_otp_by_code(otp)
     
-    if not user_id:
+    if not subject_id:
         return Response(
             {'error': 'Invalid OTP', 'message': 'Noto\'g\'ri yoki muddati o\'tgan OTP kod.'},
             status=status.HTTP_400_BAD_REQUEST
         )
     
-    # BotUser orqali User topish
-    try:
-        bot_user = BotUser.objects.get(user_id=user_id)
-        user = User.objects.get(bot_user=bot_user)
-    except (BotUser.DoesNotExist, User.DoesNotExist):
-        return Response(
-            {'error': 'User not found'},
-            status=status.HTTP_404_NOT_FOUND
-        )
+    # Userni aniqlash
+    if isinstance(subject_id, str) and subject_id.startswith("user:"):
+        user_pk = subject_id.split(":", 1)[1]
+        try:
+            user = User.objects.get(id=user_pk)
+        except (User.DoesNotExist, ValueError):
+            return Response(
+                {'error': 'User not found'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+    else:
+        # Legacy: BotUser orqali User topish
+        try:
+            bot_user = BotUser.objects.get(user_id=subject_id)
+            user = User.objects.get(bot_user=bot_user)
+        except (BotUser.DoesNotExist, User.DoesNotExist):
+            return Response(
+                {'error': 'User not found'},
+                status=status.HTTP_404_NOT_FOUND
+            )
     
     # JWT tokenlarni yaratish
     tokens = get_tokens_for_user(user)

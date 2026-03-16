@@ -43,6 +43,7 @@ for _h in ALLOWED_HOSTS:
         _default_csrf_trusted.extend([
             f"http://{_h}:8080",
             f"http://{_h}:8001",
+            f"http://{_h}:8088",
         ])
 CSRF_TRUSTED_ORIGINS = env.list("CSRF_TRUSTED_ORIGINS", default=_default_csrf_trusted)
 
