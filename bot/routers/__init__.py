@@ -49,11 +49,19 @@ def _extract_login_phone(raw_text: str) -> str | None:
     if not remainder:
         return None
 
-    candidate = remainder.split()[0].replace(" ", "")
-    if not _PHONE_RE.fullmatch(candidate):
+    candidate_raw = remainder.split()[0]
+
+    # Faqat raqamlarni ajratib olamiz (formatlash belgilarini e'tiborsiz qoldiramiz).
+    digits = re.sub(r"\D", "", candidate_raw)
+    if not digits:
+        # Ko'rinmas belgilar/emoji va h.k. bo'lsa, arg yo'q deb hisoblaymiz.
+        return None
+
+    # Minimal tekshiruv: E.164 uchun raqamlar soni 7..15 oralig'ida.
+    if not (7 <= len(digits) <= 15):
         return ""
 
-    return candidate if candidate.startswith("+") else f"+{candidate}"
+    return f"+{digits}"
 
 
 @user_router.message(CommandStart())
@@ -171,7 +179,8 @@ async def process_phone_number(message: Message, state: FSMContext):
             await message.answer(
                 f"✅ Sizning hisobingiz topildi va Telegram botga bog'landi!\n\n"
                 f"👤 Ism: {user.get_full_name()}\n"
-                f"📱 Telefon: {user.phone_number}",
+                f"📱 Telefon: {user.phone_number}\n\n"
+                "🔐 Endi tizimga kirish uchun /login buyrug'ini yuborib OTP kod oling.",
                 reply_markup=ReplyKeyboardRemove()
             )
             
@@ -189,7 +198,8 @@ async def process_phone_number(message: Message, state: FSMContext):
             await message.answer(
                 f"✅ Ro'yxatdan o'tish muvaffaqiyatli yakunlandi!\n\n"
                 f"👤 Ism: {user.get_full_name()}\n"
-                f"📱 Telefon: {user.phone_number}",
+                f"📱 Telefon: {user.phone_number}\n\n"
+                "🔐 Endi tizimga kirish uchun /login buyrug'ini yuborib OTP kod oling.",
                 reply_markup=ReplyKeyboardRemove()
             )
         
@@ -247,19 +257,22 @@ async def cmd_login(message: Message, command: CommandObject | None = None):
     user_id = str(message.from_user.id)
 
     # Superuser flow: /login <phone_number>
-    target_phone = ((command.args or "").strip().split()[0] if command and command.args else "")
-    if target_phone and target_phone.startswith("@"):
-        # Defensive: ignore accidental mentions
-        target_phone = ""
-    if target_phone:
-        target_phone = target_phone.replace(" ", "")
-        if not target_phone.startswith("+"):
-            target_phone = f"+{target_phone}"
-        if not _PHONE_RE.fullmatch(target_phone):
-            target_phone = ""
+    raw_args = (command.args or "") if command and command.args else ""
+    raw_args = raw_args.strip()
+    first_arg = (raw_args.split()[0] if raw_args else "")
+
+    target_phone: str | None = None
+    if first_arg and not first_arg.startswith("@"):
+        digits = re.sub(r"\D", "", first_arg)
+        if digits:
+            # Argda raqam bor - demak user telefon bermoqchi bo'lgan
+            if not (7 <= len(digits) <= 15):
+                target_phone = ""
+            else:
+                target_phone = f"+{digits}"
 
     extracted = _extract_login_phone(message.text or message.caption or "")
-    if not target_phone and extracted is not None:
+    if target_phone is None and extracted is not None:
         # extracted == "" means user provided an invalid phone argument
         target_phone = extracted
 
@@ -328,44 +341,63 @@ async def cmd_login(message: Message, command: CommandObject | None = None):
         )
         return
     
-    # User ro'yxatdan o'tganligini tekshirish
+    # User ro'yxatdan o'tganligini tekshirish / aniqlash
     try:
         bot_user = await BotUser.objects.aget(user_id=user_id)
-        
-        if not await User.objects.filter(bot_user=bot_user).aexists():
-            await message.answer(
-                "❌ Siz hali ro'yxatdan o'tmagansiz!\n\n"
-                "Avval /start buyrug'ini bosib ro'yxatdan o'ting."
-            )
-            return
-        
     except BotUser.DoesNotExist:
         await message.answer(
             "❌ Siz hali ro'yxatdan o'tmagansiz!\n\n"
             "Avval /start buyrug'ini bosib ro'yxatdan o'ting."
         )
         return
-    
+
+    user = await User.objects.filter(bot_user=bot_user, is_active=True).afirst()
+
+    # Agar User bog'lanmagan bo'lsa, BotUser.phone_number orqali topib bog'lashga urinib ko'ramiz
+    if not user and getattr(bot_user, "phone_number", None):
+        phone = (bot_user.phone_number or "").strip().replace(" ", "")
+        if phone:
+            if not phone.startswith("+"):
+                phone = f"+{phone}"
+            phone_without_plus = phone.lstrip("+")
+            user = await User.objects.filter(
+                phone_number__in=[phone, phone_without_plus],
+                is_active=True,
+            ).afirst()
+            if user and user.bot_user_id != bot_user.id:
+                user.bot_user = bot_user
+                await user.asave()
+
+    if not user:
+        await message.answer(
+            "❌ Siz hali ro'yxatdan o'tmagansiz!\n\n"
+            "Avval /start buyrug'ini bosib ro'yxatdan o'ting."
+        )
+        return
+
+    # OTP ni User bo'yicha bog'laymiz (telegram_verify_otp endpoint 'user:<uuid>' formatini qo'llaydi)
+    subject_id = f"user:{user.id}"
+
     # Rate limiting tekshirish
-    if not otp_manager.can_request_otp(user_id):
-        remaining_time = otp_manager.get_remaining_time(user_id)
+    if not otp_manager.can_request_otp(subject_id):
+        remaining_time = otp_manager.get_remaining_time(subject_id)
         await message.answer(
             f"⏳ Juda ko'p so'rov!\n\n"
             f"Iltimos, {remaining_time} soniyadan keyin qayta urinib ko'ring."
         )
         return
-    
+
     # OTP generatsiya qilish
     otp = otp_manager.generate_otp()
-    
+
     # OTP ni Redis ga saqlash
-    if not otp_manager.save_otp(user_id, otp):
+    if not otp_manager.save_otp(subject_id, otp):
         await message.answer(
             "❌ Xatolik yuz berdi!\n\n"
             "Iltimos, keyinroq qayta urinib ko'ring."
         )
         return
-    
+
     # OTP ni yuborish
     await message.answer(
         f"🔐 Sizning login kodingiz: <code>{otp}</code>\n\n"
