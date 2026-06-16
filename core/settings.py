@@ -240,16 +240,19 @@ CELERY_WORKER_HIJACK_ROOT_LOGGER = False
 # Error alerting toggle (default: enabled in production only)
 ERROR_ALERTS_ENABLED = env.bool("ERROR_ALERTS_ENABLED", default=not DEBUG)
 
-# Celery configuration
-CELERY_BROKER_URL = env.str(
-    "CELERY_BROKER_URL",
-    default=f"redis://{env.str('REDIS_HOST', 'redis')}:{env.int('REDIS_PORT', 6379)}/{env.int('REDIS_DB', 0)}",
-)
+# Redis connection settings
+REDIS_HOST = env.str("REDIS_HOST", "redis")
+REDIS_PORT = env.int("REDIS_PORT", 6379)
+REDIS_DB = env.int("REDIS_DB", 0)
+REDIS_PASSWORD = env.str("REDIS_PASSWORD", "")
 
-CELERY_RESULT_BACKEND = env.str(
-    "CELERY_RESULT_BACKEND",
-    default=f"redis://{env.str('REDIS_HOST', 'redis')}:{env.int('REDIS_PORT', 6379)}/{env.int('REDIS_DB', 0)}",
-)
+_redis_auth = f":{REDIS_PASSWORD}@" if REDIS_PASSWORD else ""
+_redis_base_url = f"redis://{_redis_auth}{REDIS_HOST}:{REDIS_PORT}/{REDIS_DB}"
+
+# Celery configuration
+CELERY_BROKER_URL = env.str("CELERY_BROKER_URL", default=_redis_base_url)
+
+CELERY_RESULT_BACKEND = env.str("CELERY_RESULT_BACKEND", default=_redis_base_url)
 
 CELERY_TASK_TIME_LIMIT = env.int("CELERY_TASK_TIME_LIMIT", 60 * 10)  # hard limit 10m
 CELERY_TASK_SOFT_TIME_LIMIT = env.int("CELERY_TASK_SOFT_TIME_LIMIT", 60 * 5)  # soft 5m

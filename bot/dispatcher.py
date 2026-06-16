@@ -2,11 +2,16 @@ from aiogram import Dispatcher
 from aiogram.fsm.storage.redis import RedisStorage
 from redis.asyncio import Redis
 from .routers import register_routers
-from .data.config import REDIS_HOST, REDIS_PORT, REDIS_DB
+from .data.config import REDIS_HOST, REDIS_PORT, REDIS_DB, REDIS_PASSWORD
 
 
 def create_dispatcher() -> Dispatcher:
-    redis = Redis(host=REDIS_HOST, port=REDIS_PORT, db=REDIS_DB)
+    redis = Redis(
+        host=REDIS_HOST,
+        port=REDIS_PORT,
+        db=REDIS_DB,
+        password=REDIS_PASSWORD or None,
+    )
     storage = RedisStorage(redis=redis)
     dp = Dispatcher(storage=storage)
     register_routers(dp)

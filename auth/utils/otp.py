@@ -10,12 +10,14 @@ class OTPManager:
         redis_host = getattr(settings, 'REDIS_HOST', 'redis')
         redis_port = getattr(settings, 'REDIS_PORT', 6379)
         redis_db = getattr(settings, 'REDIS_DB', 0)
-        
+        redis_password = getattr(settings, 'REDIS_PASSWORD', '') or None
+
         self.redis_client = redis.Redis(
             host=redis_host,
             port=redis_port,
             db=redis_db,
-            decode_responses=True
+            password=redis_password,
+            decode_responses=True,
         )
         self.otp_expiry = 300  # 5 daqiqa (sekundda)
         self.rate_limit_expiry = 60  # 1 daqiqa

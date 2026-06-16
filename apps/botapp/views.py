@@ -21,7 +21,12 @@ except Exception:  # pragma: no cover - optional at runtime
 env = Env(); env.read_env()
 WEBHOOK_SECRET = env.str("TELEGRAM_WEBHOOK_SECRET", default="")
 MAX_BODY_BYTES = env.int("TELEGRAM_WEBHOOK_MAX_BODY", default=2_000_000)  # ~2MB
-REDIS_URL = env.str("REDIS_URL", default="redis://redis:6379/1")
+_redis_password = env.str("REDIS_PASSWORD", default="")
+_redis_auth = f":{_redis_password}@" if _redis_password else ""
+REDIS_URL = env.str(
+    "REDIS_URL",
+    default=f"redis://{_redis_auth}{env.str('REDIS_HOST', 'redis')}:{env.int('REDIS_PORT', 6379)}/1",
+)
 
 
 @require_http_methods(["GET"])

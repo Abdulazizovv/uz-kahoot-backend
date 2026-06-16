@@ -27,8 +27,9 @@ COPY . /usr/src/app/
 # Create staticfiles directory
 RUN mkdir -p /usr/src/app/staticfiles
 
-# Make entrypoint executable
-RUN chmod +x /usr/src/app/docker/entrypoint.sh
+# Fix Windows CRLF line endings and make entrypoint executable
+RUN sed -i 's/\r$//' /usr/src/app/docker/entrypoint.sh \
+    && chmod +x /usr/src/app/docker/entrypoint.sh
 
 # Expose port
 EXPOSE 8000
