@@ -80,7 +80,7 @@ services:
     container_name: project_nginx
     restart: unless-stopped
     ports:
-      - "8255:80"
+      - "127.0.0.1:8255:80"
     volumes:
       - static_volume:/usr/src/app/staticfiles
       - media_volume:/usr/src/app/media
